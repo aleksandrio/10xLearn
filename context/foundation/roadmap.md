@@ -29,7 +29,7 @@ top_blocker: none
 
 | ID    | Change ID                    | Outcome (user can …)                                          | Prerequisites | PRD refs                                  | Status   |
 | ----- | ---------------------------- | ------------------------------------------------------------- | ------------- | ----------------------------------------- | -------- |
-| F-01  | seed-content-model           | (foundation) seeded, read-only zone/mission/lesson/quiz content | —             | FR-004, FR-007, FR-008                    | ready    |
+| F-01  | seed-content-model           | (foundation) seeded, read-only zone/mission/lesson/quiz content | —             | FR-004, FR-007, FR-008                    | done     |
 | S-01  | guest-core-loop              | play the full loop as a guest and see the next zone unlock    | F-01          | US-01, FR-001, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009 | proposed |
 | S-02  | persist-progress-with-signup | sign up (email/pw or OAuth) so progress survives and resumes  | S-01          | US-01, FR-001, FR-002, FR-003             | proposed |
 | S-03  | xp-across-sessions           | earn XP that accumulates and persists across sessions         | S-02          | FR-010                                    | proposed |
@@ -71,7 +71,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Which subject/zones ship as the first seed content? — Owner: user. Block: no (a placeholder seed unblocks S-01; real content can swap in later).
 - **Risk:** Sequenced first because nothing user-facing can render without content. Kept deliberately minimal — read-only content schema + seed only, NO progression/persistence/XP tables (those arrive with S-02/S-03) — so it stays an enabler, not a data-layer build-out. Risk: over-modeling the content schema now; mitigated by seeding only what Zone 1–2 need to prove the loop.
-- **Status:** ready
+- **Status:** done
 
 ## Slices
 
@@ -151,3 +151,5 @@ Foundations below assume these are present and do NOT re-scaffold them.
 ## Done
 
 (Empty on first generation. `/10x-archive` appends here — and flips the item's `Status` to `done` — when a change whose `Change ID` matches a roadmap item is archived.)
+
+- **F-01: (foundation) a read-only content data model — zones, missions, lessons, and quiz questions — is defined and seeded, so the loop renders real content instead of placeholders.** — Archived 2026-07-27 → `context/archive/2026-07-27-seed-content-model/`. Lesson: —.
