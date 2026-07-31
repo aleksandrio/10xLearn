@@ -28,5 +28,13 @@ create policy "Owner reads own completions" on mission_completions
 create policy "Owner inserts own completions" on mission_completions
   for insert to authenticated with check (auth.uid() = user_id);
 
-create policy "Owner updates own completions" on mission_completions
-  for update to authenticated using (auth.uid() = user_id);
+-- Table-level grant required in addition to the RLS policies: the role grant is
+-- checked before RLS, and newer Supabase CLIs create migration tables under a
+-- restrictive default ACL that withholds these privileges. RLS still restricts
+-- rows to the owner. No anon grant — guests never touch this table.
+grant select, insert on mission_completions to authenticated;
+
+-- No UPDATE/DELETE policies: completions are insert-only from the app (writes
+-- are idempotent upserts that resolve to INSERT). Withholding UPDATE also closes
+-- the row-reassignment hole a `using`-only UPDATE policy would leave open.
+-- Account deletion removes rows via the FK cascade (service-role admin client).
