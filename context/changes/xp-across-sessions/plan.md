@@ -406,8 +406,8 @@ schema dependency.
 
 #### Manual
 
-- [ ] 1.5 Seeded `xp_value` values correct (10 / 20)
-- [ ] 1.6 Existing unlock-derivation tests still pass
+- [x] 1.5 Seeded `xp_value` values correct (10 / 20)
+- [x] 1.6 Existing unlock-derivation tests still pass
 
 ### Phase 2: Grade Endpoint Returns XP
 
@@ -419,10 +419,10 @@ schema dependency.
 
 #### Manual
 
-- [ ] 2.4 Guest pass returns correct `xpEarned`/`totalXp`
-- [ ] 2.5 Re-pass returns `xpEarned: 0`, total unchanged
-- [ ] 2.6 Authed pass/re-pass behave identically against the DB
-- [ ] 2.7 Failing submission returns `xpEarned: 0`
+- [x] 2.4 Guest pass returns correct `xpEarned`/`totalXp`
+- [x] 2.5 Re-pass returns `xpEarned: 0`, total unchanged
+- [x] 2.6 Authed pass/re-pass behave identically against the DB
+- [x] 2.7 Failing submission returns `xpEarned: 0`
 
 ### Phase 3: Map XP Badge
 
@@ -434,9 +434,9 @@ schema dependency.
 
 #### Manual
 
-- [ ] 3.4 Fresh guest shows "0 XP"; after Zone 1 shows "10 XP" on reload
-- [ ] 3.5 Authed learner's prior total shows on first paint
-- [ ] 3.6 Badge is keyboard/screen-reader accessible
+- [x] 3.4 Fresh guest shows "0 XP"; after Zone 1 shows "10 XP" on reload
+- [x] 3.5 Authed learner's prior total shows on first paint
+- [x] 3.6 Badge is keyboard/screen-reader accessible
 
 ### Phase 4: Quiz "+X XP" Animated Moment
 
@@ -451,5 +451,5 @@ schema dependency.
 - [ ] 4.4 Animated "+X XP" shows on pass
 - [ ] 4.5 Reduced-motion falls back to static
 - [ ] 4.6 Map badge updates live on return
-- [ ] 4.7 Re-pass shows no "+0 XP" reward
+- [x] 4.7 Re-pass shows no "+0 XP" reward
 - [ ] 4.8 Screen reader announces the XP gain
