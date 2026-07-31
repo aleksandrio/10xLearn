@@ -442,9 +442,9 @@ schema dependency.
 
 #### Automated
 
-- [x] 4.1 Type checking passes
-- [x] 4.2 Linting passes
-- [x] 4.3 Component/unit tests pass
+- [x] 4.1 Type checking passes — 9a86071
+- [x] 4.2 Linting passes — 9a86071
+- [x] 4.3 Component/unit tests pass — 9a86071
 
 #### Manual
 
