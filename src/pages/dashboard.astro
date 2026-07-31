@@ -2,6 +2,7 @@
 import Layout from "@/layouts/Layout.astro";
 
 const { user } = Astro.locals;
+const error = Astro.url.searchParams.get("error");
 ---
 
 <Layout title="Dashboard">
@@ -14,14 +15,34 @@ const { user } = Astro.locals;
         Welcome, <span class="font-semibold text-white">{user?.email}</span>
       </p>
       <p class="mt-2 text-sm text-blue-100/50">This page is only for authenticated users.</p>
-      <form method="POST" action="/api/auth/signout" class="mt-6">
-        <button
-          type="submit"
-          class="rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm transition-colors hover:bg-white/20"
+
+      {error && <p class="mt-4 text-sm text-red-300">{error}</p>}
+
+      <div class="mt-6 flex flex-col items-center gap-3">
+        <a href="/auth/forgot-password" class="text-sm text-purple-300 hover:underline"> Change or reset password </a>
+
+        <form method="POST" action="/api/auth/signout">
+          <button
+            type="submit"
+            class="rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm transition-colors hover:bg-white/20"
+          >
+            Sign out
+          </button>
+        </form>
+
+        <form
+          method="POST"
+          action="/api/auth/delete-account"
+          onsubmit="return confirm('Delete your account? This permanently removes your progress and cannot be undone.')"
         >
-          Sign out
-        </button>
-      </form>
+          <button
+            type="submit"
+            class="rounded-lg border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm text-red-200 transition-colors hover:bg-red-500/20"
+          >
+            Delete account
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 </Layout>

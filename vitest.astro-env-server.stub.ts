@@ -7,3 +7,4 @@ export const SUPABASE_URL = "";
 export const SUPABASE_KEY = "";
 export const GUEST_PROGRESS_SECRET = "";
 export const PUBLIC_SITE_URL = "";
+export const SUPABASE_SERVICE_ROLE_KEY = "";

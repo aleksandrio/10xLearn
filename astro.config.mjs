@@ -22,6 +22,9 @@ export default defineConfig({
       // Deploy origin used to build the OAuth redirect URL. Not secret; falls
       // back to the request origin locally. See src/pages/api/auth/oauth.ts.
       PUBLIC_SITE_URL: envField.string({ context: "server", access: "public", optional: true }),
+      // Service-role key for the server-only admin client (account deletion).
+      // Bypasses RLS — never exposed to the browser. See src/lib/supabase-admin.ts.
+      SUPABASE_SERVICE_ROLE_KEY: envField.string({ context: "server", access: "secret", optional: true }),
     },
   },
 });
