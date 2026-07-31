@@ -4,12 +4,13 @@ import WorldMap from "@/components/game/WorldMap";
 import { createClient } from "@/lib/supabase";
 import { buildMapModel, type MapZone } from "@/lib/game";
 import { readUnlockedZones, GUEST_PROGRESS_COOKIE } from "@/lib/guest-progress";
-import { getUnlockedZoneSlugsForUser } from "@/lib/progress";
+import { getUnlockedZoneSlugsForUser, getTotalXpForUser, getGuestTotalXp } from "@/lib/progress";
 
 const supabase = createClient(Astro.request.headers, Astro.cookies);
 const user = Astro.locals.user;
 
 let zones: MapZone[] = [];
+let xp = 0;
 let loadFailed = false;
 
 if (supabase) {
@@ -21,6 +22,10 @@ if (supabase) {
       ? await getUnlockedZoneSlugsForUser(supabase, user.id)
       : await readUnlockedZones(Astro.cookies.get(GUEST_PROGRESS_COOKIE)?.value);
     zones = await buildMapModel(supabase, unlocked);
+    // XP is derived the same way for both: authed reads the DB completions,
+    // guest derives it from the cookie unlock set. Inside the try so a failure
+    // still falls through to the "unavailable" state rather than a half-render.
+    xp = user ? await getTotalXpForUser(supabase, user.id) : await getGuestTotalXp(supabase, unlocked);
   } catch {
     loadFailed = true;
   }
@@ -30,7 +35,13 @@ if (supabase) {
 <Layout title="10xLearn — World Map">
   {
     supabase && !loadFailed ? (
-      <WorldMap client:load initialZones={zones} isAuthenticated={!!user} userEmail={user?.email ?? null} />
+      <WorldMap
+        client:load
+        initialZones={zones}
+        initialXp={xp}
+        isAuthenticated={!!user}
+        userEmail={user?.email ?? null}
+      />
     ) : (
       <main class="mx-auto max-w-2xl px-4 py-10">
         <h1 class="text-2xl font-semibold tracking-tight">World map unavailable</h1>

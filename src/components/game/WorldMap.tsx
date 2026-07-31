@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BookOpen, Compass, HelpCircle, Lightbulb, Lock, X } from "lucide-react";
+import { BookOpen, Compass, HelpCircle, Lightbulb, Lock, X, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CheckpointType, MapZone } from "@/lib/game";
 import LessonPanel, { type LessonData } from "./LessonPanel";
@@ -7,6 +7,7 @@ import QuizPanel, { type QuizData } from "./QuizPanel";
 
 interface Props {
   initialZones: MapZone[];
+  initialXp: number;
   isAuthenticated: boolean;
   userEmail?: string | null;
 }
@@ -22,8 +23,11 @@ const CHECKPOINT_ICON: Record<CheckpointType, typeof BookOpen> = {
 // Phase 2 wires station clicks to fetch gated content and switch sub-views
 // (map ⇄ lesson ⇄ quiz) without touching the URL. Phase 3 adds grading + the
 // unlock transition (the point at which the character advances to a new zone).
-export default function WorldMap({ initialZones, isAuthenticated, userEmail = null }: Props) {
+export default function WorldMap({ initialZones, initialXp, isAuthenticated, userEmail = null }: Props) {
   const [zones, setZones] = useState<MapZone[]>(initialZones);
+  // Accumulated XP total, seeded from SSR. Phase 4 pushes live updates here on a
+  // pass; for now the badge reflects the total computed at first paint.
+  const [xp] = useState(initialXp);
   const [view, setView] = useState<View>("map");
   const [activeZone, setActiveZone] = useState<string | null>(null);
   const [status, setStatus] = useState<PanelStatus>("loading");
@@ -158,10 +162,16 @@ export default function WorldMap({ initialZones, isAuthenticated, userEmail = nu
             Light the trail one zone at a time. Read the briefing, clear its gate, and the next zone lifts out of the
             fog.
           </p>
-          <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 font-mono text-xs tracking-widest text-amber-200 uppercase">
-            <Lightbulb className="size-3.5" aria-hidden />
-            {litCount} / {total} zones lit
-          </p>
+          <div className="mt-5 flex flex-wrap items-center gap-2">
+            <p className="inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 font-mono text-xs tracking-widest text-amber-200 uppercase">
+              <Lightbulb className="size-3.5" aria-hidden />
+              {litCount} / {total} zones lit
+            </p>
+            <p className="inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 font-mono text-xs tracking-widest text-amber-200 uppercase">
+              <Zap className="size-3.5" aria-hidden />
+              {xp} XP
+            </p>
+          </div>
         </header>
 
         {/* The trail: a single spine runs the full height; stations sit to either side. */}
