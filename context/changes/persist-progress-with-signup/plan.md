@@ -461,7 +461,7 @@ Recorded during manual verification (2026-07-31) — bugs the automated gates
 
 #### Manual
 
-- [ ] 1.5 RLS denies cross-user select of `mission_completions` (verified in Studio)
+- [x] 1.5 RLS denies cross-user select of `mission_completions` — verified: owner sees own row, non-owner sees 0 via REST+JWT (2026-07-31)
 - [x] 1.6 Deleting a test user cascades away their `mission_completions` rows — verified in DB (2026-07-31)
 
 ### Phase 2: DB-authoritative read/write for authed users
@@ -476,7 +476,7 @@ Recorded during manual verification (2026-07-31) — bugs the automated gates
 
 - [x] 2.4 Authed pass unlocks next zone; reload keeps it (from DB) — verified via browser e2e (2026-07-31)
 - [x] 2.5 Guest loop unchanged from S-01 (no regression) — verified via browser e2e (2026-07-31)
-- [ ] 2.6 Authed `grade` POST to a locked zone returns 403
+- [x] 2.6 Authed `grade` POST to a locked zone returns 403 — verified (2026-07-31)
 
 ### Phase 3: Guest→account merge in middleware
 
@@ -489,8 +489,8 @@ Recorded during manual verification (2026-07-31) — bugs the automated gates
 #### Manual
 
 - [x] 3.4 Guest unlock survives signup/login via merge; cookie cleared — verified via browser e2e (2026-07-31)
-- [ ] 3.5 Union wins both directions (no downgrade, no loss)
-- [ ] 3.6 Merge idempotent across reloads (no dup rows / errors)
+- [x] 3.5 Union wins both directions (no downgrade, no loss) — verified: behind-account advances, ahead-account unchanged (2026-07-31)
+- [x] 3.6 Merge idempotent across reloads (no dup rows / errors) — verified: exactly 1 row after re-merge + reloads (2026-07-31)
 
 ### Phase 4: Google OAuth
 
@@ -516,7 +516,7 @@ Recorded during manual verification (2026-07-31) — bugs the automated gates
 #### Manual
 
 - [x] 5.4 Guest sees header entry + post-unlock nudge; authed sees neither — verified via browser e2e (2026-07-31)
-- [ ] 5.5 Nudge and header link are keyboard-operable and labelled
+- [x] 5.5 Nudge and header link are keyboard-operable and labelled — verified: focus + Enter navigates for both (2026-07-31)
 
 ### Phase 6: Account management
 
