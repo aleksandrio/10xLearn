@@ -58,18 +58,15 @@ export async function getZones(supabase: ContentClient): Promise<Zone[]> {
 }
 
 /**
- * The first mission of a zone (by slug), together with its lesson.
- * Returns `null` when the zone or its mission does not exist.
+ * The first mission of a zone (by zone id), together with its lesson.
+ * Returns `null` when the zone has no mission. Prefer this when the caller
+ * already holds the zone row (e.g. from `getZones()`), to skip a slug lookup.
  */
-export async function getMissionByZone(supabase: ContentClient, zoneSlug: string): Promise<MissionWithLesson | null> {
-  const { data: zone, error: zoneError } = await supabase.from("zones").select("id").eq("slug", zoneSlug).maybeSingle();
-  if (zoneError) throw zoneError;
-  if (!zone) return null;
-
+export async function getMissionByZoneId(supabase: ContentClient, zoneId: string): Promise<MissionWithLesson | null> {
   const { data, error } = await supabase
     .from("missions")
     .select("*, lessons(*)")
-    .eq("zone_id", zone.id)
+    .eq("zone_id", zoneId)
     .order("order_index", { ascending: true })
     .limit(1)
     .maybeSingle();
@@ -78,6 +75,18 @@ export async function getMissionByZone(supabase: ContentClient, zoneSlug: string
 
   const { lessons, ...mission } = data;
   return { ...mission, lesson: lessons[0] ?? null };
+}
+
+/**
+ * The first mission of a zone (by slug), together with its lesson.
+ * Returns `null` when the zone or its mission does not exist.
+ */
+export async function getMissionByZone(supabase: ContentClient, zoneSlug: string): Promise<MissionWithLesson | null> {
+  const { data: zone, error: zoneError } = await supabase.from("zones").select("id").eq("slug", zoneSlug).maybeSingle();
+  if (zoneError) throw zoneError;
+  if (!zone) return null;
+
+  return getMissionByZoneId(supabase, zone.id);
 }
 
 /**
