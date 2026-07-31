@@ -8,6 +8,7 @@ import QuizPanel, { type QuizData } from "./QuizPanel";
 interface Props {
   initialZones: MapZone[];
   isAuthenticated: boolean;
+  userEmail?: string | null;
 }
 
 type View = "map" | "lesson" | "quiz";
@@ -21,7 +22,7 @@ const CHECKPOINT_ICON: Record<CheckpointType, typeof BookOpen> = {
 // Phase 2 wires station clicks to fetch gated content and switch sub-views
 // (map ⇄ lesson ⇄ quiz) without touching the URL. Phase 3 adds grading + the
 // unlock transition (the point at which the character advances to a new zone).
-export default function WorldMap({ initialZones, isAuthenticated }: Props) {
+export default function WorldMap({ initialZones, isAuthenticated, userEmail = null }: Props) {
   const [zones, setZones] = useState<MapZone[]>(initialZones);
   const [view, setView] = useState<View>("map");
   const [activeZone, setActiveZone] = useState<string | null>(null);
@@ -107,7 +108,29 @@ export default function WorldMap({ initialZones, isAuthenticated }: Props) {
       </div>
 
       <div className="relative mx-auto max-w-3xl px-4 py-16">
-        {!isAuthenticated && (
+        {isAuthenticated ? (
+          <nav aria-label="Account" className="mb-8 flex items-center justify-end gap-3 text-sm">
+            {userEmail && (
+              <span className="hidden text-slate-400 sm:inline" title={userEmail}>
+                {userEmail}
+              </span>
+            )}
+            <a
+              href="/dashboard"
+              className="rounded-lg px-3 py-1.5 font-medium text-slate-300 transition hover:text-white focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
+            >
+              Dashboard
+            </a>
+            <form method="POST" action="/api/auth/signout">
+              <button
+                type="submit"
+                className="rounded-lg bg-amber-400/15 px-3 py-1.5 font-medium text-amber-200 transition hover:bg-amber-400/25 focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
+              >
+                Sign out
+              </button>
+            </form>
+          </nav>
+        ) : (
           <nav aria-label="Account" className="mb-8 flex justify-end gap-2 text-sm">
             <a
               href="/auth/signin"
