@@ -1,7 +1,7 @@
 ---
 change_id: persist-progress-with-signup
 title: Persist progress with sign-up (email/pw or OAuth)
-status: implementing
+status: implemented
 created: 2026-07-31
 updated: 2026-07-31
 archived_at: null
