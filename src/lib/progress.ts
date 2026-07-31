@@ -8,7 +8,7 @@
 // whether it came from the guest cookie or from a user's DB completions. So the
 // DB path here only needs to *produce that set*; map assembly is reused verbatim.
 
-import { getZones, getMissionByZoneId, type ContentClient, type Zone } from "@/lib/content";
+import { getZones, type ContentClient, type Zone } from "@/lib/content";
 import { nextZoneSlug } from "@/lib/game";
 
 /**
@@ -68,17 +68,25 @@ export function impliedCompletionsFromUnlocked(
 }
 
 /**
- * Build the zone-slug → mission-id lookup for every zone, in play order.
- * One query per zone via the existing `getMissionByZoneId`; parallelised.
+ * Build the zone-slug → mission-id lookup for every zone (each zone's first
+ * mission by play order). A single `missions` query — ordered by `order_index`,
+ * keeping the earliest row seen per `zone_id` — rather than one query per zone.
  */
 async function buildMissionIdByZone(supabase: ContentClient, zones: Zone[]): Promise<MissionIdByZone> {
-  const entries = await Promise.all(
-    zones.map(async (zone): Promise<[string, string | null]> => {
-      const mission = await getMissionByZoneId(supabase, zone.id);
-      return [zone.slug, mission?.id ?? null];
-    }),
-  );
-  return new Map(entries);
+  const { data, error } = await supabase
+    .from("missions")
+    .select("id, zone_id, order_index")
+    .order("order_index", { ascending: true });
+  if (error) throw error;
+
+  const firstMissionByZoneId = new Map<string, string>();
+  for (const mission of data) {
+    if (!firstMissionByZoneId.has(mission.zone_id)) {
+      firstMissionByZoneId.set(mission.zone_id, mission.id);
+    }
+  }
+
+  return new Map(zones.map((zone) => [zone.slug, firstMissionByZoneId.get(zone.id) ?? null]));
 }
 
 /**

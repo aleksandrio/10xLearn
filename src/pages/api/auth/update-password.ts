@@ -7,7 +7,13 @@ export const prerender = false;
 // /auth/update-password, so updateUser sets the new password for that session.
 export const POST: APIRoute = async (context) => {
   const form = await context.request.formData();
-  const password = form.get("password") as string;
+  const password = form.get("password");
+
+  if (typeof password !== "string" || password.length < 6) {
+    return context.redirect(
+      `/auth/update-password?error=${encodeURIComponent("Password must be at least 6 characters")}`,
+    );
+  }
 
   const supabase = createClient(context.request.headers, context.cookies);
   if (!supabase) {
