@@ -57,6 +57,13 @@ create policy "Public read missions" on missions
 create policy "Public read lessons" on lessons
   for select to anon, authenticated using (true);
 
+-- Table-level SELECT grant is required in addition to the RLS policies above:
+-- the role grant is checked before RLS, and newer Supabase CLIs create
+-- migration tables under a restrictive default ACL that withholds SELECT from
+-- anon/authenticated. Without this, reads fail with "permission denied" before
+-- the policies ever apply. RLS still governs which rows are visible.
+grant select on zones, missions, lessons to anon, authenticated;
+
 -- quiz_questions: intentionally NO anon/authenticated SELECT policy.
 -- With RLS enabled and no policy, clients read zero rows from the base table.
 -- Access to safe quiz columns is only via quiz_questions_public below.

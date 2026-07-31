@@ -4,6 +4,10 @@ import { FormField } from "@/components/auth/FormField";
 import { PasswordToggle } from "@/components/auth/PasswordToggle";
 import { SubmitButton } from "@/components/auth/SubmitButton";
 import { ServerError } from "@/components/auth/ServerError";
+// Google sign-in temporarily disabled (provider not yet configured). Re-enable
+// the [auth.external.google] block in supabase/config.toml and restore the
+// import + <GoogleButton /> below when OAuth is implemented.
+// import { GoogleButton } from "@/components/auth/GoogleButton";
 
 const MIN_PASSWORD_LENGTH = 6;
 
@@ -63,72 +67,75 @@ export default function SignUpForm({ serverError }: Props) {
     ) : undefined;
 
   return (
-    <form method="POST" action="/api/auth/signup" className="space-y-4" onSubmit={handleSubmit} noValidate>
-      <FormField
-        id="email"
-        type="email"
-        label="Email"
-        value={email}
-        onChange={(v) => {
-          setEmail(v);
-          clearError("email");
-        }}
-        placeholder="you@example.com"
-        error={errors.email}
-        icon={<Mail className="size-4" />}
-      />
+    <>
+      <form method="POST" action="/api/auth/signup" className="space-y-4" onSubmit={handleSubmit} noValidate>
+        <FormField
+          id="email"
+          type="email"
+          label="Email"
+          value={email}
+          onChange={(v) => {
+            setEmail(v);
+            clearError("email");
+          }}
+          placeholder="you@example.com"
+          error={errors.email}
+          icon={<Mail className="size-4" />}
+        />
 
-      <FormField
-        id="password"
-        label="Password"
-        type={showPassword ? "text" : "password"}
-        value={password}
-        onChange={(v) => {
-          setPassword(v);
-          clearError("password");
-        }}
-        placeholder="Min. 6 characters"
-        error={errors.password}
-        hint={passwordHint}
-        icon={<Lock className="size-4" />}
-        endContent={
-          <PasswordToggle
-            visible={showPassword}
-            onToggle={() => {
-              setShowPassword(!showPassword);
-            }}
-          />
-        }
-      />
+        <FormField
+          id="password"
+          label="Password"
+          type={showPassword ? "text" : "password"}
+          value={password}
+          onChange={(v) => {
+            setPassword(v);
+            clearError("password");
+          }}
+          placeholder="Min. 6 characters"
+          error={errors.password}
+          hint={passwordHint}
+          icon={<Lock className="size-4" />}
+          endContent={
+            <PasswordToggle
+              visible={showPassword}
+              onToggle={() => {
+                setShowPassword(!showPassword);
+              }}
+            />
+          }
+        />
 
-      <FormField
-        id="confirmPassword"
-        name="confirmPassword"
-        label="Confirm password"
-        type={showConfirmPassword ? "text" : "password"}
-        value={confirmPassword}
-        onChange={(v) => {
-          setConfirmPassword(v);
-          clearError("confirmPassword");
-        }}
-        placeholder="Re-enter your password"
-        error={errors.confirmPassword}
-        icon={<Lock className="size-4" />}
-        endContent={
-          <PasswordToggle
-            visible={showConfirmPassword}
-            onToggle={() => {
-              setShowConfirmPassword(!showConfirmPassword);
-            }}
-          />
-        }
-      />
+        <FormField
+          id="confirmPassword"
+          name="confirmPassword"
+          label="Confirm password"
+          type={showConfirmPassword ? "text" : "password"}
+          value={confirmPassword}
+          onChange={(v) => {
+            setConfirmPassword(v);
+            clearError("confirmPassword");
+          }}
+          placeholder="Re-enter your password"
+          error={errors.confirmPassword}
+          icon={<Lock className="size-4" />}
+          endContent={
+            <PasswordToggle
+              visible={showConfirmPassword}
+              onToggle={() => {
+                setShowConfirmPassword(!showConfirmPassword);
+              }}
+            />
+          }
+        />
 
-      <ServerError message={serverError} />
+        <ServerError message={serverError} />
 
-      <SubmitButton pendingText="Creating account..." icon={<UserPlus className="size-4" />}>
-        Create account
-      </SubmitButton>
-    </form>
+        <SubmitButton pendingText="Creating account..." icon={<UserPlus className="size-4" />}>
+          Create account
+        </SubmitButton>
+      </form>
+      {/* <GoogleButton /> — disabled until Google OAuth is configured */}
+    </>
   );
 }

@@ -4,15 +4,22 @@ import WorldMap from "@/components/game/WorldMap";
 import { createClient } from "@/lib/supabase";
 import { buildMapModel, type MapZone } from "@/lib/game";
 import { readUnlockedZones, GUEST_PROGRESS_COOKIE } from "@/lib/guest-progress";
+import { getUnlockedZoneSlugsForUser } from "@/lib/progress";
 
 const supabase = createClient(Astro.request.headers, Astro.cookies);
+const user = Astro.locals.user;
 
 let zones: MapZone[] = [];
 let loadFailed = false;
 
 if (supabase) {
   try {
-    const unlocked = await readUnlockedZones(Astro.cookies.get(GUEST_PROGRESS_COOKIE)?.value);
+    // Authed learners read their unlocked set from the DB (mission_completions);
+    // guests keep the signed-cookie path untouched. `buildMapModel` is source-
+    // agnostic, so the same call renders either set.
+    const unlocked = user
+      ? await getUnlockedZoneSlugsForUser(supabase, user.id)
+      : await readUnlockedZones(Astro.cookies.get(GUEST_PROGRESS_COOKIE)?.value);
     zones = await buildMapModel(supabase, unlocked);
   } catch {
     loadFailed = true;
@@ -23,7 +30,7 @@ if (supabase) {
 <Layout title="10xLearn — World Map">
   {
     supabase && !loadFailed ? (
-      <WorldMap client:load initialZones={zones} />
+      <WorldMap client:load initialZones={zones} isAuthenticated={!!user} userEmail={user?.email ?? null} />
     ) : (
       <main class="mx-auto max-w-2xl px-4 py-10">
         <h1 class="text-2xl font-semibold tracking-tight">World map unavailable</h1>
