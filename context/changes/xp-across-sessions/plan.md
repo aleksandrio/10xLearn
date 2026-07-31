@@ -428,9 +428,9 @@ schema dependency.
 
 #### Automated
 
-- [x] 3.1 Type checking passes
-- [x] 3.2 Linting passes
-- [x] 3.3 Component/unit tests pass
+- [x] 3.1 Type checking passes — 3be596a
+- [x] 3.2 Linting passes — 3be596a
+- [x] 3.3 Component/unit tests pass — 3be596a
 
 #### Manual
 
@@ -442,9 +442,9 @@ schema dependency.
 
 #### Automated
 
-- [ ] 4.1 Type checking passes
-- [ ] 4.2 Linting passes
-- [ ] 4.3 Component/unit tests pass
+- [x] 4.1 Type checking passes
+- [x] 4.2 Linting passes
+- [x] 4.3 Component/unit tests pass
 
 #### Manual
 

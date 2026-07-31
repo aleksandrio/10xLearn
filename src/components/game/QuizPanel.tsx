@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, CheckCircle2, HelpCircle, PartyPopper, RotateCcw, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle2, HelpCircle, PartyPopper, RotateCcw, XCircle, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { QuizQuestion } from "@/lib/content";
 
@@ -14,6 +14,10 @@ interface GradeResult {
   total: number;
   results: { question_id: string; correct: boolean }[];
   unlockedZones: string[];
+  // XP just earned on this submission (0 on a fail or a re-pass) and the new
+  // running total. `totalXp` is pushed up to the map badge via onUnlocked.
+  xpEarned: number;
+  totalXp: number;
 }
 
 interface Props {
@@ -21,7 +25,7 @@ interface Props {
   status: "loading" | "error" | "ready";
   data: QuizData | null;
   onBack: () => void;
-  onUnlocked: (unlockedZones: string[]) => void;
+  onUnlocked: (unlockedZones: string[], totalXp: number) => void;
 }
 
 // Quiz sub-view (Phase 3): select answers → submit → grade server-side. On a
@@ -57,7 +61,7 @@ export default function QuizPanel({ zoneSlug, status, data, onBack, onUnlocked }
       const graded = (await response.json()) as GradeResult;
       setResult(graded);
       setPhase("result");
-      if (graded.passed) onUnlocked(graded.unlockedZones);
+      if (graded.passed) onUnlocked(graded.unlockedZones, graded.totalXp);
     } catch {
       setSubmitError("We couldn't grade your answers. Please try again.");
       setPhase("answering");
@@ -108,7 +112,7 @@ export default function QuizPanel({ zoneSlug, status, data, onBack, onUnlocked }
           <div aria-live="polite" className="sr-only">
             {phase === "result" && result
               ? result.passed
-                ? "You passed. The next zone is unlocked."
+                ? `You passed.${result.xpEarned > 0 ? ` You earned ${result.xpEarned} XP.` : ""} The next zone is unlocked.`
                 : `Not quite. ${result.correct_count} of ${result.total} correct. Try again.`
               : ""}
           </div>
@@ -119,6 +123,18 @@ export default function QuizPanel({ zoneSlug, status, data, onBack, onUnlocked }
                 <PartyPopper className="size-5" aria-hidden />
                 You cleared the gate!
               </p>
+              {/* The XP gain moment — animated in for motion-safe users, static
+                  otherwise. Suppressed entirely on a re-pass (xpEarned 0) so it
+                  never shows "+0 XP" as a reward. aria-hidden: the SR user hears
+                  the gain via the aria-live announcement above instead. */}
+              {result.xpEarned > 0 && (
+                <p
+                  aria-hidden
+                  className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 mt-3 inline-flex items-center gap-1.5 rounded-full bg-amber-300/20 px-3 py-1 text-2xl font-black text-amber-100 motion-safe:duration-700"
+                >
+                  <Zap className="size-6" aria-hidden />+{result.xpEarned} XP
+                </p>
+              )}
               <p className="mt-2 text-sm text-slate-300">
                 The next zone is lit. Head back to the map to see the trail open up.
               </p>

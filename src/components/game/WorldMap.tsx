@@ -25,9 +25,9 @@ const CHECKPOINT_ICON: Record<CheckpointType, typeof BookOpen> = {
 // unlock transition (the point at which the character advances to a new zone).
 export default function WorldMap({ initialZones, initialXp, isAuthenticated, userEmail = null }: Props) {
   const [zones, setZones] = useState<MapZone[]>(initialZones);
-  // Accumulated XP total, seeded from SSR. Phase 4 pushes live updates here on a
-  // pass; for now the badge reflects the total computed at first paint.
-  const [xp] = useState(initialXp);
+  // Accumulated XP total, seeded from SSR and updated live when a pass reports a
+  // new total (see handleUnlocked), so returning to the map shows current XP.
+  const [xp, setXp] = useState(initialXp);
   const [view, setView] = useState<View>("map");
   const [activeZone, setActiveZone] = useState<string | null>(null);
   const [status, setStatus] = useState<PanelStatus>("loading");
@@ -43,8 +43,9 @@ export default function WorldMap({ initialZones, initialXp, isAuthenticated, use
 
   // Unlock is derived server-side; the grade response tells us which zones are
   // now open so the map re-renders (and the character advances to the frontier).
-  function handleUnlocked(unlockedZones: string[]) {
+  function handleUnlocked(unlockedZones: string[], totalXp: number) {
     setZones((prev) => prev.map((zone) => (unlockedZones.includes(zone.slug) ? { ...zone, locked: false } : zone)));
+    setXp(totalXp);
     if (!isAuthenticated) setShowNudge(true);
   }
 
