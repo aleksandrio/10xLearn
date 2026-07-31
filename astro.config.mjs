@@ -19,6 +19,9 @@ export default defineConfig({
       SUPABASE_URL: envField.string({ context: "server", access: "secret", optional: true }),
       SUPABASE_KEY: envField.string({ context: "server", access: "secret", optional: true }),
       GUEST_PROGRESS_SECRET: envField.string({ context: "server", access: "secret", optional: true }),
+      // Deploy origin used to build the OAuth redirect URL. Not secret; falls
+      // back to the request origin locally. See src/pages/api/auth/oauth.ts.
+      PUBLIC_SITE_URL: envField.string({ context: "server", access: "public", optional: true }),
     },
   },
 });
