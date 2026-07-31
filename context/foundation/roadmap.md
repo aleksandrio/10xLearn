@@ -3,7 +3,7 @@ project: 10xLearn
 version: 1
 status: draft
 created: 2026-07-27
-updated: 2026-07-27
+updated: 2026-07-31
 prd_version: 1
 main_goal: market-feedback
 top_blocker: none
@@ -31,7 +31,7 @@ top_blocker: none
 | ----- | ---------------------------- | ------------------------------------------------------------- | ------------- | ----------------------------------------- | -------- |
 | F-01  | seed-content-model           | (foundation) seeded, read-only zone/mission/lesson/quiz content | —             | FR-004, FR-007, FR-008                    | done     |
 | S-01  | guest-core-loop              | play the full loop as a guest and see the next zone unlock    | F-01          | US-01, FR-001, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009 | done     |
-| S-02  | persist-progress-with-signup | sign up (email/pw or OAuth) so progress survives and resumes  | S-01          | US-01, FR-001, FR-002, FR-003             | proposed |
+| S-02  | persist-progress-with-signup | sign up (email/pw or OAuth) so progress survives and resumes  | S-01          | US-01, FR-001, FR-002, FR-003             | done     |
 | S-03  | xp-across-sessions           | earn XP that accumulates and persists across sessions         | S-02          | FR-010                                    | proposed |
 | S-04  | accessible-core-loop         | complete the whole loop keyboard-only or with a screen reader | S-01          | US-01, NFR (accessibility)                | proposed |
 
@@ -99,7 +99,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Which third-party OAuth provider(s) ship first (FR-002 names OAuth generically)? — Owner: user. Block: no (email/password already covers the must-have; OAuth can follow).
 - **Risk:** Delivers the persistence guardrail (the secondary success criterion) and closes US-01. Sequenced after S-01 because there is no progress to persist until the loop exists. Builds on the present Supabase auth scaffold (baseline) rather than re-scaffolding it; introduces the progression persistence schema here — the first slice that actually needs it (progressive disclosure) — rather than pre-building it in F-01. Risk: the guest→account state handoff (carrying an in-session unlock into a new account) is the fiddly part; call it out in the plan.
-- **Status:** proposed
+- **Status:** done
 
 ### S-03: XP across sessions
 
@@ -153,3 +153,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 (Empty on first generation. `/10x-archive` appends here — and flips the item's `Status` to `done` — when a change whose `Change ID` matches a roadmap item is archived.)
 
 - **F-01: (foundation) a read-only content data model — zones, missions, lessons, and quiz questions — is defined and seeded, so the loop renders real content instead of placeholders.** — Archived 2026-07-27 → `context/archive/2026-07-27-seed-content-model/`. Lesson: —.
+- **S-02: after the guest loop, a learner can sign up (email + password — already scaffolded — or third-party OAuth) and their unlock and quiz result are saved; on returning they log in and resume exactly where they left off, with nothing reset.** — Archived 2026-07-31 → `context/archive/2026-07-31-persist-progress-with-signup/`. Lesson: —.

@@ -1,10 +1,10 @@
 ---
 change_id: persist-progress-with-signup
 title: Persist progress with sign-up (email/pw or OAuth)
-status: impl_reviewed
+status: archived
 created: 2026-07-31
 updated: 2026-07-31
-archived_at: null
+archived_at: 2026-07-31T17:11:24Z
 ---
 
 ## Notes
