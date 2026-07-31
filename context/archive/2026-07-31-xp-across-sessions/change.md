@@ -1,10 +1,10 @@
 ---
 change_id: xp-across-sessions
 title: XP across sessions
-status: implemented
+status: archived
 created: 2026-07-31
 updated: 2026-07-31
-archived_at: null
+archived_at: 2026-07-31T19:42:46Z
 ---
 
 ## Notes
