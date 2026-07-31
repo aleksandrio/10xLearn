@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BookOpen, Compass, HelpCircle, Lightbulb, Lock } from "lucide-react";
+import { BookOpen, Compass, HelpCircle, Lightbulb, Lock, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CheckpointType, MapZone } from "@/lib/game";
 import LessonPanel, { type LessonData } from "./LessonPanel";
@@ -7,6 +7,7 @@ import QuizPanel, { type QuizData } from "./QuizPanel";
 
 interface Props {
   initialZones: MapZone[];
+  isAuthenticated: boolean;
 }
 
 type View = "map" | "lesson" | "quiz";
@@ -20,13 +21,16 @@ const CHECKPOINT_ICON: Record<CheckpointType, typeof BookOpen> = {
 // Phase 2 wires station clicks to fetch gated content and switch sub-views
 // (map ⇄ lesson ⇄ quiz) without touching the URL. Phase 3 adds grading + the
 // unlock transition (the point at which the character advances to a new zone).
-export default function WorldMap({ initialZones }: Props) {
+export default function WorldMap({ initialZones, isAuthenticated }: Props) {
   const [zones, setZones] = useState<MapZone[]>(initialZones);
   const [view, setView] = useState<View>("map");
   const [activeZone, setActiveZone] = useState<string | null>(null);
   const [status, setStatus] = useState<PanelStatus>("loading");
   const [lesson, setLesson] = useState<LessonData | null>(null);
   const [quiz, setQuiz] = useState<QuizData | null>(null);
+  // Guests get a "save your progress" nudge the moment they clear a gate; authed
+  // learners never see it (their progress is already persisted).
+  const [showNudge, setShowNudge] = useState(false);
 
   function backToMap() {
     setView("map");
@@ -36,6 +40,7 @@ export default function WorldMap({ initialZones }: Props) {
   // now open so the map re-renders (and the character advances to the frontier).
   function handleUnlocked(unlockedZones: string[]) {
     setZones((prev) => prev.map((zone) => (unlockedZones.includes(zone.slug) ? { ...zone, locked: false } : zone)));
+    if (!isAuthenticated) setShowNudge(true);
   }
 
   async function openLesson(zoneSlug: string) {
@@ -102,6 +107,22 @@ export default function WorldMap({ initialZones }: Props) {
       </div>
 
       <div className="relative mx-auto max-w-3xl px-4 py-16">
+        {!isAuthenticated && (
+          <nav aria-label="Account" className="mb-8 flex justify-end gap-2 text-sm">
+            <a
+              href="/auth/signin"
+              className="rounded-lg px-3 py-1.5 font-medium text-slate-300 transition hover:text-white focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
+            >
+              Sign in
+            </a>
+            <a
+              href="/auth/signup"
+              className="rounded-lg bg-amber-400/15 px-3 py-1.5 font-medium text-amber-200 transition hover:bg-amber-400/25 focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
+            >
+              Sign up
+            </a>
+          </nav>
+        )}
         <header>
           <p className="flex items-center gap-2 font-mono text-xs tracking-[0.35em] text-amber-300/80 uppercase">
             <Compass className="size-3.5" aria-hidden />
@@ -276,6 +297,36 @@ export default function WorldMap({ initialZones }: Props) {
           </div>
         </div>
       </div>
+
+      {!isAuthenticated && showNudge && (
+        <div
+          role="region"
+          aria-label="Save your progress"
+          className="fixed inset-x-4 bottom-4 z-30 mx-auto flex max-w-md items-center gap-3 rounded-xl border border-amber-400/40 bg-slate-900/95 px-4 py-3 shadow-lg backdrop-blur"
+        >
+          <Lightbulb className="size-5 shrink-0 text-amber-300" aria-hidden />
+          <p className="min-w-0 flex-1 text-sm text-slate-200">
+            Nice — you lit a new zone.{" "}
+            <a
+              href="/auth/signup"
+              className="font-semibold text-amber-200 underline underline-offset-2 transition hover:text-amber-100 focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
+            >
+              Sign up to save your progress
+            </a>{" "}
+            so it&rsquo;s here next time.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setShowNudge(false);
+            }}
+            aria-label="Dismiss"
+            className="shrink-0 rounded-md p-1 text-slate-400 transition hover:text-white focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
+          >
+            <X className="size-4" aria-hidden />
+          </button>
+        </div>
+      )}
     </main>
   );
 }
