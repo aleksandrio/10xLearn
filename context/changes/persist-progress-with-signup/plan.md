@@ -411,10 +411,10 @@ At <1 qps the added per-request work is negligible. The middleware merge is gate
 
 #### Automated
 
-- [x] 1.1 Migration + seed apply cleanly: `npm run db:reset`
-- [x] 1.2 Types regenerate and include `mission_completions`: `npm run db:types`
-- [x] 1.3 Type checking passes: `npx astro check`
-- [x] 1.4 Linting passes: `npm run lint`
+- [x] 1.1 Migration + seed apply cleanly: `npm run db:reset` — 0dd6d00
+- [x] 1.2 Types regenerate and include `mission_completions`: `npm run db:types` — 0dd6d00
+- [x] 1.3 Type checking passes: `npx astro check` — 0dd6d00
+- [x] 1.4 Linting passes: `npm run lint` — 0dd6d00
 
 #### Manual
 
@@ -425,9 +425,9 @@ At <1 qps the added per-request work is negligible. The middleware merge is gate
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass: `npm test`
-- [ ] 2.2 Type checking passes: `npx astro check`
-- [ ] 2.3 Linting passes: `npm run lint`
+- [x] 2.1 Unit tests pass: `npm test`
+- [x] 2.2 Type checking passes: `npx astro check`
+- [x] 2.3 Linting passes: `npm run lint`
 
 #### Manual
 

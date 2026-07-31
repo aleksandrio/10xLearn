@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase";
 import { getMissionByZoneId, getZones, gradeQuiz } from "@/lib/content";
 import { isZoneUnlocked, nextZoneSlug } from "@/lib/game";
 import { GUEST_PROGRESS_COOKIE, readUnlockedZones, writeUnlockedZones } from "@/lib/guest-progress";
+import { getUnlockedZoneSlugsForUser, recordCompletion } from "@/lib/progress";
 
 export const prerender = false;
 
@@ -34,10 +35,16 @@ export const POST: APIRoute = async (context) => {
     return Response.json({ error: "Grading is unavailable right now." }, { status: 503 });
   }
 
+  const user = context.locals.user;
+
   try {
     const cookieValue = context.cookies.get(GUEST_PROGRESS_COOKIE)?.value;
-    const [unlocked, zones] = await Promise.all([readUnlockedZones(cookieValue), getZones(supabase)]);
+    const zones = await getZones(supabase);
     const firstSlug = zones[0]?.slug;
+
+    // The gate uses the DB-derived set for authed learners, the signed cookie
+    // for guests — so a direct POST to a locked zone is rejected either way.
+    let unlocked = user ? await getUnlockedZoneSlugsForUser(supabase, user.id) : await readUnlockedZones(cookieValue);
 
     if (!isZoneUnlocked(zoneSlug, firstSlug, unlocked)) {
       return Response.json({ error: "This zone is locked." }, { status: 403 });
@@ -52,9 +59,16 @@ export const POST: APIRoute = async (context) => {
     const result = await gradeQuiz(supabase, mission.id, answers);
 
     if (result.passed) {
-      const next = nextZoneSlug(zones, zoneSlug);
-      if (next) unlocked.add(next);
-      await writeUnlockedZones(context.cookies, unlocked);
+      if (user) {
+        // Authed: record the completion, then recompute the effective set from
+        // the DB (the unlock is derived from completions, not added by hand).
+        await recordCompletion(supabase, user.id, mission.id);
+        unlocked = await getUnlockedZoneSlugsForUser(supabase, user.id);
+      } else {
+        const next = nextZoneSlug(zones, zoneSlug);
+        if (next) unlocked.add(next);
+        await writeUnlockedZones(context.cookies, unlocked);
+      }
     }
 
     // The client's view of "which zones are open" — the earned set plus the
