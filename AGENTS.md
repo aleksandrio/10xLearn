@@ -40,4 +40,4 @@ Use the `/10x-e2e` skill (see @CLAUDE.md). Playwright locators: `getByRole`/`get
 
 ## CI
 
-`.github/workflows/ci.yml` runs lint + build on every push/PR to `master`. Set `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets.
+`.github/workflows/ci.yml` runs lint + build on every push/PR to `main`. Set `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets.
