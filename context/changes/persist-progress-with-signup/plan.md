@@ -425,9 +425,9 @@ At <1 qps the added per-request work is negligible. The middleware merge is gate
 
 #### Automated
 
-- [x] 2.1 Unit tests pass: `npm test`
-- [x] 2.2 Type checking passes: `npx astro check`
-- [x] 2.3 Linting passes: `npm run lint`
+- [x] 2.1 Unit tests pass: `npm test` — e6e6c93
+- [x] 2.2 Type checking passes: `npx astro check` — e6e6c93
+- [x] 2.3 Linting passes: `npm run lint` — e6e6c93
 
 #### Manual
 
@@ -439,9 +439,9 @@ At <1 qps the added per-request work is negligible. The middleware merge is gate
 
 #### Automated
 
-- [ ] 3.1 Type checking passes: `npx astro check`
-- [ ] 3.2 Linting passes: `npm run lint`
-- [ ] 3.3 Unit tests pass: `npm test`
+- [x] 3.1 Type checking passes: `npx astro check`
+- [x] 3.2 Linting passes: `npm run lint`
+- [x] 3.3 Unit tests pass: `npm test`
 
 #### Manual
 
