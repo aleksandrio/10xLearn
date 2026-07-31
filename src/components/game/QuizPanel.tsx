@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, CheckCircle2, HelpCircle, PartyPopper, RotateCcw, XCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { QuizQuestion } from "@/lib/content";
 
 export interface QuizData {
@@ -175,12 +176,12 @@ export default function QuizPanel({ zoneSlug, status, data, onBack, onUnlocked }
                             return (
                               <label
                                 key={option.id}
-                                className={
-                                  "flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-sm transition " +
-                                  (selected
+                                className={cn(
+                                  "flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-sm transition",
+                                  selected
                                     ? "border-sky-400/70 bg-sky-400/10 text-slate-100"
-                                    : "border-slate-700/70 bg-slate-900/60 text-slate-300 hover:border-slate-600")
-                                }
+                                    : "border-slate-700/70 bg-slate-900/60 text-slate-300 hover:border-slate-600",
+                                )}
                               >
                                 <input
                                   type="radio"

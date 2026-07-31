@@ -27,7 +27,13 @@ const DEV_FALLBACK_SECRET = "insecure-dev-guest-progress-secret";
 const encoder = new TextEncoder();
 
 function secret(): string {
-  return GUEST_PROGRESS_SECRET ?? DEV_FALLBACK_SECRET;
+  if (GUEST_PROGRESS_SECRET) return GUEST_PROGRESS_SECRET;
+  // Never sign/verify with the public dev key in production — a misconfigured
+  // deploy would let anyone forge an unlock cookie. Fail closed instead.
+  if (import.meta.env.PROD) {
+    throw new Error("GUEST_PROGRESS_SECRET must be set in production.");
+  }
+  return DEV_FALLBACK_SECRET;
 }
 
 function bytesToBase64Url(bytes: Uint8Array): string {

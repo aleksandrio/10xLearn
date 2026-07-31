@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase";
-import { getMissionByZone, getZones, gradeQuiz } from "@/lib/content";
+import { getMissionByZoneId, getZones, gradeQuiz } from "@/lib/content";
 import { isZoneUnlocked, nextZoneSlug } from "@/lib/game";
 import { GUEST_PROGRESS_COOKIE, readUnlockedZones, writeUnlockedZones } from "@/lib/guest-progress";
 
@@ -43,7 +43,8 @@ export const POST: APIRoute = async (context) => {
       return Response.json({ error: "This zone is locked." }, { status: 403 });
     }
 
-    const mission = await getMissionByZone(supabase, zoneSlug);
+    const zone = zones.find((candidate) => candidate.slug === zoneSlug);
+    const mission = zone ? await getMissionByZoneId(supabase, zone.id) : null;
     if (!mission) {
       return Response.json({ error: "Quiz not found." }, { status: 404 });
     }

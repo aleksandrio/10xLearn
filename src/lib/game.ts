@@ -6,7 +6,7 @@
 // helper) because only this layer knows the play order (`order_index`). The
 // cookie carries only the zones a guest has *earned* beyond the first.
 
-import { getZones, getMissionByZone, type ContentClient, type Zone } from "@/lib/content";
+import { getZones, getMissionByZoneId, type ContentClient, type Zone } from "@/lib/content";
 import { readUnlockedZones } from "@/lib/guest-progress";
 
 export type CheckpointType = "lesson" | "quiz";
@@ -66,7 +66,7 @@ export async function buildMapModel(supabase: ContentClient, unlocked: Set<strin
 
   return Promise.all(
     zones.map(async (zone): Promise<MapZone> => {
-      const mission = await getMissionByZone(supabase, zone.slug);
+      const mission = await getMissionByZoneId(supabase, zone.id);
       return {
         slug: zone.slug,
         title: zone.title,
