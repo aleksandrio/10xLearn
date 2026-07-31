@@ -30,7 +30,7 @@ top_blocker: none
 | ID    | Change ID                    | Outcome (user can …)                                          | Prerequisites | PRD refs                                  | Status   |
 | ----- | ---------------------------- | ------------------------------------------------------------- | ------------- | ----------------------------------------- | -------- |
 | F-01  | seed-content-model           | (foundation) seeded, read-only zone/mission/lesson/quiz content | —             | FR-004, FR-007, FR-008                    | done     |
-| S-01  | guest-core-loop              | play the full loop as a guest and see the next zone unlock    | F-01          | US-01, FR-001, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009 | proposed |
+| S-01  | guest-core-loop              | play the full loop as a guest and see the next zone unlock    | F-01          | US-01, FR-001, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009 | done     |
 | S-02  | persist-progress-with-signup | sign up (email/pw or OAuth) so progress survives and resumes  | S-01          | US-01, FR-001, FR-002, FR-003             | proposed |
 | S-03  | xp-across-sessions           | earn XP that accumulates and persists across sessions         | S-02          | FR-010                                    | proposed |
 | S-04  | accessible-core-loop         | complete the whole loop keyboard-only or with a screen reader | S-01          | US-01, NFR (accessibility)                | proposed |

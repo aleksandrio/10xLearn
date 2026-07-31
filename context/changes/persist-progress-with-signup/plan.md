@@ -403,6 +403,49 @@ At <1 qps the added per-request work is negligible. The middleware merge is gate
 - Prior slice: `context/changes/guest-core-loop/plan.md` (S-01 — the cookie path this builds on).
 - Guest cookie: `src/lib/guest-progress.ts`; map assembly seam: `src/lib/game.ts:63`; grade write: `src/pages/api/game/grade.ts:54-57`.
 
+## Deviations from plan (addenda)
+
+Recorded during implementation review (2026-07-31):
+
+- **Test infrastructure (Phase 2)**: added `vitest.config.ts` resolve alias +
+  `vitest.astro-env-server.stub.ts` so the planned `progress.test.ts` can run —
+  Vitest cannot resolve the `astro:env/server` virtual module. Inert stub, no
+  assertion weakened. Not in the original file list; in-scope by necessity.
+- **Shared component (Phase 4)**: the "Continue with Google" button was factored
+  into `src/components/auth/GoogleButton.tsx` and rendered in both auth forms,
+  rather than inlined per form. Cleaner; same intent.
+- **RLS (Phase 1, post-review fix)**: the UPDATE policy on `mission_completions`
+  was dropped (app is insert-only; a `using`-only UPDATE policy left a
+  row-reassignment hole). See `reviews/impl-review.md` F1.
+- **Site origin (Phase 4/6, post-review fix)**: OAuth/reset redirect origins now
+  resolve via `src/lib/site-url.ts` (`resolveSiteOrigin`), fail-closed in
+  production. See `reviews/impl-review.md` F3.
+
+Recorded during manual verification (2026-07-31) — bugs the automated gates
+(`astro check`, `eslint`, `vitest`) could not catch, all found by running the app:
+
+- **DB read access (Phase 1)**: content tables (`zones`/`missions`/`lessons`) and
+  `mission_completions` had RLS policies but no table-level `SELECT`/`INSERT`
+  grant. Newer Supabase CLIs create migration tables under a restrictive
+  `postgres`-owned default ACL that withholds these, so every read failed with
+  "permission denied" before RLS applied → the map rendered "World map
+  unavailable". Added explicit `grant` statements to both migrations.
+- **React duplication (Phase 4/5)**: the auth-form islands rendered blank —
+  `useFormStatus` (via `SubmitButton`) plus `@radix-ui/react-slot` pulled a second
+  React copy into the Vite graph ("Invalid hook call / more than one copy of
+  React"), crashing SSR and hydration. Fixed with `resolve.dedupe: [react,
+  react-dom]` in `astro.config.mjs`.
+- **Map sign-out (Phase 5)**: authed users had no sign-out/account affordance on
+  the map (only `/dashboard` did). Added an authed account nav (email + Dashboard
+  + Sign out) to `WorldMap.tsx`, mirroring the guest branch.
+- **Password reset (Phase 6)**: `/auth/update-password` never exchanged the PKCE
+  `code` from the recovery link, so `updateUser` failed with "Auth session
+  missing!" and the password never changed. Now exchanges the code for a session
+  in the page frontmatter.
+- **Google OAuth deferred**: provider left `enabled = false` and the
+  `<GoogleButton />` removed from both forms (config + component scaffolding
+  retained) pending real Google credentials.
+
 ## Progress
 
 > Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
@@ -419,7 +462,7 @@ At <1 qps the added per-request work is negligible. The middleware merge is gate
 #### Manual
 
 - [ ] 1.5 RLS denies cross-user select of `mission_completions` (verified in Studio)
-- [ ] 1.6 Deleting a test user cascades away their `mission_completions` rows
+- [x] 1.6 Deleting a test user cascades away their `mission_completions` rows — verified in DB (2026-07-31)
 
 ### Phase 2: DB-authoritative read/write for authed users
 
@@ -431,8 +474,8 @@ At <1 qps the added per-request work is negligible. The middleware merge is gate
 
 #### Manual
 
-- [ ] 2.4 Authed pass unlocks next zone; reload keeps it (from DB)
-- [ ] 2.5 Guest loop unchanged from S-01 (no regression)
+- [x] 2.4 Authed pass unlocks next zone; reload keeps it (from DB) — verified via browser e2e (2026-07-31)
+- [x] 2.5 Guest loop unchanged from S-01 (no regression) — verified via browser e2e (2026-07-31)
 - [ ] 2.6 Authed `grade` POST to a locked zone returns 403
 
 ### Phase 3: Guest→account merge in middleware
@@ -445,7 +488,7 @@ At <1 qps the added per-request work is negligible. The middleware merge is gate
 
 #### Manual
 
-- [ ] 3.4 Guest unlock survives signup/login via merge; cookie cleared
+- [x] 3.4 Guest unlock survives signup/login via merge; cookie cleared — verified via browser e2e (2026-07-31)
 - [ ] 3.5 Union wins both directions (no downgrade, no loss)
 - [ ] 3.6 Merge idempotent across reloads (no dup rows / errors)
 
@@ -472,7 +515,7 @@ At <1 qps the added per-request work is negligible. The middleware merge is gate
 
 #### Manual
 
-- [ ] 5.4 Guest sees header entry + post-unlock nudge; authed sees neither
+- [x] 5.4 Guest sees header entry + post-unlock nudge; authed sees neither — verified via browser e2e (2026-07-31)
 - [ ] 5.5 Nudge and header link are keyboard-operable and labelled
 
 ### Phase 6: Account management
@@ -485,7 +528,7 @@ At <1 qps the added per-request work is negligible. The middleware merge is gate
 
 #### Manual
 
-- [ ] 6.4 Password reset round-trip works (request → update → sign in)
+- [x] 6.4 Password reset round-trip works (request → update → sign in) — verified via browser e2e (2026-07-31)
 - [ ] 6.5 Account deletion removes the user and cascades progress away
 - [ ] 6.6 Delete endpoint rejects unauthenticated callers
 - [ ] 6.7 `SUPABASE_SERVICE_ROLE_KEY` absent from the client bundle
