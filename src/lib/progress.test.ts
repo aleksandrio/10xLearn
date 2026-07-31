@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { unlockedSlugsFromCompletions, impliedCompletionsFromUnlocked, type MissionIdByZone } from "@/lib/progress";
+import {
+  unlockedSlugsFromCompletions,
+  impliedCompletionsFromUnlocked,
+  xpFromCompletions,
+  type MissionIdByZone,
+} from "@/lib/progress";
 import type { Zone } from "@/lib/content";
 
 // Locks down the completion⇄unlock derivation — the highest-risk reconciliation
@@ -51,6 +56,37 @@ describe("impliedCompletionsFromUnlocked", () => {
     expect(impliedCompletionsFromUnlocked(zones, missionIdByZone, new Set(["z0", "z1", "z2"]))).toEqual(
       new Set(["m0", "m1"]),
     );
+  });
+});
+
+describe("xpFromCompletions", () => {
+  // Escalating per-mission weights, mirroring the seed (foundations=10,
+  // context-and-agents=20). m2 gives a third value to prove summing, not doubling.
+  const xpByMissionId = new Map([
+    ["m0", 10],
+    ["m1", 20],
+    ["m2", 30],
+  ]);
+
+  it("returns 0 when nothing is completed", () => {
+    expect(xpFromCompletions(xpByMissionId, new Set())).toBe(0);
+  });
+
+  it("returns a single completed mission's value", () => {
+    expect(xpFromCompletions(xpByMissionId, new Set(["m0"]))).toBe(10);
+  });
+
+  it("sums the values of several completed missions", () => {
+    expect(xpFromCompletions(xpByMissionId, new Set(["m0", "m1", "m2"]))).toBe(60);
+  });
+
+  it("weights per mission (a later mission is worth more)", () => {
+    expect(xpFromCompletions(xpByMissionId, new Set(["m1"]))).toBe(20);
+    expect(xpFromCompletions(xpByMissionId, new Set(["m0", "m1"]))).toBe(30);
+  });
+
+  it("contributes 0 for a completed id absent from the xp map", () => {
+    expect(xpFromCompletions(xpByMissionId, new Set(["m0", "ghost"]))).toBe(10);
   });
 });
 

@@ -68,6 +68,24 @@ export function impliedCompletionsFromUnlocked(
 }
 
 /**
+ * completions → total XP (map badge + grade response). The pure core of S-03 XP:
+ * XP is never stored as a running total, it is summed on demand from the
+ * completed-mission set. Sibling of `unlockedSlugsFromCompletions` — a pure
+ * function of the completion set, unit-tested in isolation.
+ *
+ * Sums `xp_value` for each completed mission id present in `xpByMissionId`; a
+ * completed id with no entry in the map contributes 0 (e.g. a mission removed
+ * from content after it was cleared).
+ */
+export function xpFromCompletions(xpByMissionId: Map<string, number>, completedMissionIds: Set<string>): number {
+  let total = 0;
+  for (const missionId of completedMissionIds) {
+    total += xpByMissionId.get(missionId) ?? 0;
+  }
+  return total;
+}
+
+/**
  * Build the zone-slug → mission-id lookup for every zone (each zone's first
  * mission by play order). A single `missions` query — ordered by `order_index`,
  * keeping the earliest row seen per `zone_id` — rather than one query per zone.
@@ -90,6 +108,18 @@ async function buildMissionIdByZone(supabase: ContentClient, zones: Zone[]): Pro
 }
 
 /**
+ * Build the mission-id → xp_value lookup — the XP-weight analogue of
+ * `buildMissionIdByZone`, and the DB input to the pure `xpFromCompletions`. A
+ * single `missions` query; `missions` has public read so both guest and authed
+ * paths can call it.
+ */
+async function buildXpByMissionId(supabase: ContentClient): Promise<Map<string, number>> {
+  const { data, error } = await supabase.from("missions").select("id, xp_value");
+  if (error) throw error;
+  return new Map(data.map((mission) => [mission.id, mission.xp_value]));
+}
+
+/**
  * The unlocked-zone slug set for an authenticated user, derived from their DB
  * completions. Reads `mission_completions` (RLS scopes to the caller), joins the
  * play-order zone list, and applies the pure derivation. Feed the result to
@@ -108,14 +138,56 @@ export async function getUnlockedZoneSlugsForUser(supabase: ContentClient, userI
 }
 
 /**
+ * The total XP for an authenticated user, derived from their DB completions.
+ * Reads `mission_completions` (RLS scopes to the caller) and the xp-value map,
+ * then applies the pure `xpFromCompletions`. Idempotent by construction — the
+ * total is a function of the `unique(user_id, mission_id)` set, so re-passing a
+ * mission cannot inflate it.
+ */
+export async function getTotalXpForUser(supabase: ContentClient, userId: string): Promise<number> {
+  const [completionsResult, xpByMissionId] = await Promise.all([
+    supabase.from("mission_completions").select("mission_id").eq("user_id", userId),
+    buildXpByMissionId(supabase),
+  ]);
+  if (completionsResult.error) throw completionsResult.error;
+
+  const completedMissionIds = new Set(completionsResult.data.map((row) => row.mission_id));
+  return xpFromCompletions(xpByMissionId, completedMissionIds);
+}
+
+/**
+ * The total XP for a guest, derived from their signed-cookie unlocks. Reuses
+ * `impliedCompletionsFromUnlocked` to turn the unlocked-slug set into the implied
+ * completed-mission set, then applies the same pure sum — so guest XP needs no
+ * cookie-format change and no schema of its own.
+ */
+export async function getGuestTotalXp(supabase: ContentClient, cookieUnlocked: Set<string>): Promise<number> {
+  const zones = await getZones(supabase);
+  const [missionIdByZone, xpByMissionId] = await Promise.all([
+    buildMissionIdByZone(supabase, zones),
+    buildXpByMissionId(supabase),
+  ]);
+  const completed = impliedCompletionsFromUnlocked(zones, missionIdByZone, cookieUnlocked);
+  return xpFromCompletions(xpByMissionId, completed);
+}
+
+/**
  * Record that `userId` passed `missionId`. Idempotent: an upsert that ignores
  * the `(user_id, mission_id)` unique conflict, so re-recording a pass is a no-op.
+ *
+ * Returns whether a row was genuinely inserted (`true`) or the conflict was
+ * ignored because the completion already existed (`false`). `.select("id")`
+ * yields the inserted row(s) on an insert and no rows on an ignored conflict —
+ * this is exactly the signal `grade.ts` needs to award the per-pass "+X XP"
+ * delta only on a *new* completion (0 on a re-pass).
  */
-export async function recordCompletion(supabase: ContentClient, userId: string, missionId: string): Promise<void> {
-  const { error } = await supabase
+export async function recordCompletion(supabase: ContentClient, userId: string, missionId: string): Promise<boolean> {
+  const { data, error } = await supabase
     .from("mission_completions")
-    .upsert({ user_id: userId, mission_id: missionId }, { onConflict: "user_id,mission_id", ignoreDuplicates: true });
+    .upsert({ user_id: userId, mission_id: missionId }, { onConflict: "user_id,mission_id", ignoreDuplicates: true })
+    .select("id");
   if (error) throw error;
+  return data.length > 0;
 }
 
 /**

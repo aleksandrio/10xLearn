@@ -98,6 +98,7 @@ export type Database = {
           order_index: number
           slug: string
           title: string
+          xp_value: number
           zone_id: string
         }
         Insert: {
@@ -105,6 +106,7 @@ export type Database = {
           order_index: number
           slug: string
           title: string
+          xp_value?: number
           zone_id: string
         }
         Update: {
@@ -112,6 +114,7 @@ export type Database = {
           order_index?: number
           slug?: string
           title?: string
+          xp_value?: number
           zone_id?: string
         }
         Relationships: [
