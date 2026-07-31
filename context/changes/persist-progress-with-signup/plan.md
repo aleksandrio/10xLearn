@@ -529,6 +529,6 @@ Recorded during manual verification (2026-07-31) — bugs the automated gates
 #### Manual
 
 - [x] 6.4 Password reset round-trip works (request → update → sign in) — verified via browser e2e (2026-07-31)
-- [ ] 6.5 Account deletion removes the user and cascades progress away
-- [ ] 6.6 Delete endpoint rejects unauthenticated callers
-- [ ] 6.7 `SUPABASE_SERVICE_ROLE_KEY` absent from the client bundle
+- [x] 6.5 Account deletion removes the user and cascades progress away — verified via browser e2e + DB (2026-07-31)
+- [x] 6.6 Delete endpoint rejects unauthenticated callers — verified: unauth POST → 302 /auth/signin (2026-07-31)
+- [x] 6.7 `SUPABASE_SERVICE_ROLE_KEY` absent from the client bundle — verified: 0 occurrences in `dist/` build (2026-07-31)
