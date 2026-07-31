@@ -1,21 +1,70 @@
+import { useState } from "react";
 import { BookOpen, Compass, HelpCircle, Lightbulb, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CheckpointType, MapZone } from "@/lib/game";
+import LessonPanel, { type LessonData } from "./LessonPanel";
+import QuizPanel, { type QuizData } from "./QuizPanel";
 
 interface Props {
   initialZones: MapZone[];
 }
+
+type View = "map" | "lesson" | "quiz";
+type PanelStatus = "loading" | "error" | "ready";
 
 const CHECKPOINT_ICON: Record<CheckpointType, typeof BookOpen> = {
   lesson: BookOpen,
   quiz: HelpCircle,
 };
 
-// Phase 1 renders the `map` sub-view only: a static "field map" of the journey.
-// Phase 2 introduces the view/activeZone state and wires station clicks to open
-// the lesson/quiz sub-views; Phase 3 adds grading + the unlock transition (the
-// point at which the character actually advances to a newly-lit zone).
+// Phase 2 wires station clicks to fetch gated content and switch sub-views
+// (map ⇄ lesson ⇄ quiz) without touching the URL. Phase 3 adds grading + the
+// unlock transition (the point at which the character advances to a new zone).
 export default function WorldMap({ initialZones }: Props) {
+  const [view, setView] = useState<View>("map");
+  const [status, setStatus] = useState<PanelStatus>("loading");
+  const [lesson, setLesson] = useState<LessonData | null>(null);
+  const [quiz, setQuiz] = useState<QuizData | null>(null);
+
+  function backToMap() {
+    setView("map");
+  }
+
+  async function openLesson(zoneSlug: string) {
+    setView("lesson");
+    setStatus("loading");
+    setLesson(null);
+    try {
+      const response = await fetch(`/api/game/lesson?zoneSlug=${encodeURIComponent(zoneSlug)}`);
+      if (!response.ok) throw new Error(`lesson request failed: ${response.status}`);
+      setLesson((await response.json()) as LessonData);
+      setStatus("ready");
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  async function openQuiz(zoneSlug: string) {
+    setView("quiz");
+    setStatus("loading");
+    setQuiz(null);
+    try {
+      const response = await fetch(`/api/game/quiz?zoneSlug=${encodeURIComponent(zoneSlug)}`);
+      if (!response.ok) throw new Error(`quiz request failed: ${response.status}`);
+      setQuiz((await response.json()) as QuizData);
+      setStatus("ready");
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  if (view === "lesson") {
+    return <LessonPanel status={status} data={lesson} onBack={backToMap} />;
+  }
+  if (view === "quiz") {
+    return <QuizPanel status={status} data={quiz} onBack={backToMap} />;
+  }
+
   const total = initialZones.length;
   const litCount = initialZones.filter((zone) => !zone.locked).length;
   // The frontier is the furthest zone reached; the character waits at its lesson
@@ -123,6 +172,11 @@ export default function WorldMap({ initialZones }: Props) {
                           type="button"
                           disabled={zone.locked}
                           aria-disabled={zone.locked}
+                          onClick={
+                            zone.locked
+                              ? undefined
+                              : () => (checkpoint.type === "lesson" ? openLesson(zone.slug) : openQuiz(zone.slug))
+                          }
                           aria-label={`${zone.title} ${checkpoint.type} checkpoint${zone.locked ? " (locked)" : ""}${
                             isCurrent ? ", your position" : ""
                           }`}
@@ -148,7 +202,7 @@ export default function WorldMap({ initialZones }: Props) {
                             <Icon className="size-5" aria-hidden />
                           </span>
                           <span className="min-w-0">
-                            <span className="block font-mono text-[10px] tracking-widest text-slate-400 capitalize uppercase">
+                            <span className="block font-mono text-[10px] tracking-widest text-slate-400 uppercase">
                               {checkpoint.type}
                             </span>
                             <span className="block truncate text-sm font-semibold">{checkpoint.title}</span>

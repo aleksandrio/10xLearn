@@ -3,7 +3,7 @@ change_id: guest-core-loop
 title: Guest core loop
 status: implementing
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-07-31
 archived_at: null
 ---
 

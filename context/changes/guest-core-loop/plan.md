@@ -289,31 +289,31 @@ No database changes. One new env var `GUEST_PROGRESS_SECRET` (optional; dev fall
 
 #### Automated
 
-- [x] 1.1 Linting passes: `npm run lint`
-- [x] 1.2 Build + type-check passes: `npm run build`
+- [x] 1.1 Linting passes: `npm run lint` — 55431c4
+- [x] 1.2 Build + type-check passes: `npm run build` — 55431c4
 
 #### Manual
 
-- [x] 1.3 `/` shows the world map (no starter welcome); Zone 1 open, Zone 2 locked
-- [x] 1.4 Fresh guest sees Zone 1 only; refresh preserves it
-- [x] 1.5 Tampered cookie falls back to fresh default (no error page)
-- [x] 1.6 Supabase unconfigured shows a friendly message, not a crash
-- [x] 1.7 Map is keyboard-operable; locked checkpoints announced as locked
+- [x] 1.3 `/` shows the world map (no starter welcome); Zone 1 open, Zone 2 locked — 55431c4
+- [x] 1.4 Fresh guest sees Zone 1 only; refresh preserves it — 55431c4
+- [x] 1.5 Tampered cookie falls back to fresh default (no error page) — 55431c4
+- [x] 1.6 Supabase unconfigured shows a friendly message, not a crash — 55431c4
+- [x] 1.7 Map is keyboard-operable; locked checkpoints announced as locked — 55431c4
 
 ### Phase 2: Open a checkpoint — read the lesson / see the quiz
 
 #### Automated
 
-- [ ] 2.1 Linting passes: `npm run lint`
-- [ ] 2.2 Build + type-check passes: `npm run build`
-- [ ] 2.3 Locked-zone gate: `lesson?zoneSlug=context-and-agents` → 403 (fresh guest); `zoneSlug=foundations` → lesson JSON
+- [x] 2.1 Linting passes: `npm run lint`
+- [x] 2.2 Build + type-check passes: `npm run build`
+- [x] 2.3 Locked-zone gate: `lesson?zoneSlug=context-and-agents` → 403 (fresh guest); `zoneSlug=foundations` → lesson JSON
 
 #### Manual
 
-- [ ] 2.4 Zone 1 lesson checkpoint shows the lesson; back returns to map
-- [ ] 2.5 Zone 1 quiz checkpoint shows 3 questions; no correct-answer hint in payload
-- [ ] 2.6 Zone 2 checkpoints cannot be opened; direct quiz endpoint returns 403
-- [ ] 2.7 Lesson/quiz panels keyboard-navigable; focus lands in panel on open
+- [x] 2.4 Zone 1 lesson checkpoint shows the lesson; back returns to map
+- [x] 2.5 Zone 1 quiz checkpoint shows 3 questions; no correct-answer hint in payload
+- [x] 2.6 Zone 2 checkpoints cannot be opened; direct quiz endpoint returns 403
+- [x] 2.7 Lesson/quiz panels keyboard-navigable; focus lands in panel on open
 
 ### Phase 3: Take the quiz → pass/fail → unlock
 
