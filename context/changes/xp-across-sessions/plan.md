@@ -399,10 +399,10 @@ schema dependency.
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly (`db reset`/migrate)
-- [x] 1.2 Unit tests pass (`npm run test`)
-- [x] 1.3 Type checking passes
-- [x] 1.4 Linting passes
+- [x] 1.1 Migration applies cleanly (`db reset`/migrate) — 6292656
+- [x] 1.2 Unit tests pass (`npm run test`) — 6292656
+- [x] 1.3 Type checking passes — 6292656
+- [x] 1.4 Linting passes — 6292656
 
 #### Manual
 
@@ -413,9 +413,9 @@ schema dependency.
 
 #### Automated
 
-- [ ] 2.1 Type checking passes
-- [ ] 2.2 Linting passes
-- [ ] 2.3 Unit tests pass
+- [x] 2.1 Type checking passes
+- [x] 2.2 Linting passes
+- [x] 2.3 Unit tests pass
 
 #### Manual
 

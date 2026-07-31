@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase";
 import { getMissionByZoneId, getZones, gradeQuiz } from "@/lib/content";
 import { isZoneUnlocked, nextZoneSlug } from "@/lib/game";
 import { GUEST_PROGRESS_COOKIE, readUnlockedZones, writeUnlockedZones } from "@/lib/guest-progress";
-import { getUnlockedZoneSlugsForUser, recordCompletion } from "@/lib/progress";
+import { getUnlockedZoneSlugsForUser, recordCompletion, getTotalXpForUser, getGuestTotalXp } from "@/lib/progress";
 
 export const prerender = false;
 
@@ -58,25 +58,42 @@ export const POST: APIRoute = async (context) => {
 
     const result = await gradeQuiz(supabase, mission.id, answers);
 
+    // XP is weighted per mission; the "+X XP" moment awards it only on a
+    // genuinely new completion (0 on a re-pass), while `totalXp` is the derived
+    // running total. Both default to the no-gain case (fail, or re-pass).
+    const missionXpValue = mission.xp_value;
+    let xpEarned = 0;
+
     if (result.passed) {
       if (user) {
         // Authed: record the completion, then recompute the effective set from
         // the DB (the unlock is derived from completions, not added by hand).
-        await recordCompletion(supabase, user.id, mission.id);
+        // `recordCompletion` reports whether a row was actually inserted — a
+        // re-pass ignores the unique conflict and awards no XP.
+        const wasNew = await recordCompletion(supabase, user.id, mission.id);
+        xpEarned = wasNew ? missionXpValue : 0;
         unlocked = await getUnlockedZoneSlugsForUser(supabase, user.id);
       } else {
+        // Guest: a new completion is exactly the case where the just-passed
+        // mission's next zone was not already unlocked (checked before the add).
         const next = nextZoneSlug(zones, zoneSlug);
+        const wasNew = !!next && !unlocked.has(next);
         if (next) unlocked.add(next);
         await writeUnlockedZones(context.cookies, unlocked);
+        xpEarned = wasNew ? missionXpValue : 0;
       }
     }
+
+    // The running total after any write: authed reads the DB, guest derives it
+    // from the (post-write) cookie unlock set — the same sums the map badge uses.
+    const totalXp = user ? await getTotalXpForUser(supabase, user.id) : await getGuestTotalXp(supabase, unlocked);
 
     // The client's view of "which zones are open" — the earned set plus the
     // always-free first zone. Lets the map re-render the unlock immediately.
     const effective = new Set(unlocked);
     if (firstSlug) effective.add(firstSlug);
 
-    return Response.json({ ...result, unlockedZones: [...effective] });
+    return Response.json({ ...result, unlockedZones: [...effective], xpEarned, totalXp });
   } catch {
     return Response.json({ error: "Something went wrong grading this quiz." }, { status: 500 });
   }
