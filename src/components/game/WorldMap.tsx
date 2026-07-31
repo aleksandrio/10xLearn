@@ -41,12 +41,16 @@ export default function WorldMap({ initialZones, initialXp, isAuthenticated, use
     setView("map");
   }
 
-  // Unlock is derived server-side; the grade response tells us which zones are
-  // now open so the map re-renders (and the character advances to the frontier).
-  function handleUnlocked(unlockedZones: string[], totalXp: number) {
-    setZones((prev) => prev.map((zone) => (unlockedZones.includes(zone.slug) ? { ...zone, locked: false } : zone)));
-    setXp(totalXp);
-    if (!isAuthenticated) setShowNudge(true);
+  // Unlock and XP are both derived server-side; the grade response tells us which
+  // zones are now open so the map re-renders (and the character advances to the
+  // frontier). Fired after *every* graded attempt, because a failed attempt can
+  // still bank XP — but the "you lit a new zone" nudge is gated on an actual pass.
+  function handleGraded(result: { unlockedZones: string[]; totalXp: number; passed: boolean }) {
+    setZones((prev) =>
+      prev.map((zone) => (result.unlockedZones.includes(zone.slug) ? { ...zone, locked: false } : zone)),
+    );
+    setXp(result.totalXp);
+    if (!isAuthenticated && result.passed) setShowNudge(true);
   }
 
   async function openLesson(zoneSlug: string) {
@@ -84,13 +88,7 @@ export default function WorldMap({ initialZones, initialXp, isAuthenticated, use
   }
   if (view === "quiz") {
     return (
-      <QuizPanel
-        status={status}
-        data={quiz}
-        zoneSlug={activeZone ?? ""}
-        onBack={backToMap}
-        onUnlocked={handleUnlocked}
-      />
+      <QuizPanel status={status} data={quiz} zoneSlug={activeZone ?? ""} onBack={backToMap} onGraded={handleGraded} />
     );
   }
 

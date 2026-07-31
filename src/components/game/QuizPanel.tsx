@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, CheckCircle2, HelpCircle, PartyPopper, RotateCcw, XCircle, Zap } from "lucide-react";
+import { ArrowLeft, CheckCircle2, HelpCircle, PartyPopper, RotateCcw, Trophy, XCircle, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { QuizQuestion } from "@/lib/content";
 
@@ -8,16 +8,25 @@ export interface QuizData {
   questions: QuizQuestion[];
 }
 
-interface GradeResult {
+export interface GradeResult {
   passed: boolean;
   correct_count: number;
   total: number;
   results: { question_id: string; correct: boolean }[];
   unlockedZones: string[];
-  // XP just earned on this submission (0 on a fail or a re-pass) and the new
-  // running total. `totalXp` is pushed up to the map badge via onUnlocked.
+  // What this submission added to the running total — the gain over the learner's
+  // previous best, so a retake can raise it but never inflate it.
   xpEarned: number;
   totalXp: number;
+  // What this attempt's score is worth on its own, and whether it beat the
+  // previous best. `attemptXp` is shown even when `xpEarned` is 0, so a retake
+  // always reports something instead of going silent.
+  attemptXp: number;
+  isRecord: boolean;
+  bestCorrectCount: number;
+  bestQuestionTotal: number;
+  bestXp: number;
+  missionXpValue: number;
 }
 
 interface Props {
@@ -25,13 +34,68 @@ interface Props {
   status: "loading" | "error" | "ready";
   data: QuizData | null;
   onBack: () => void;
-  onUnlocked: (unlockedZones: string[], totalXp: number) => void;
+  onGraded: (result: GradeResult) => void;
 }
 
-// Quiz sub-view (Phase 3): select answers → submit → grade server-side. On a
-// pass, the success panel shows and the map is told to unlock (via onUnlocked);
-// on a fail, per-question correctness shows with unlimited "Try again".
-export default function QuizPanel({ zoneSlug, status, data, onBack, onUnlocked }: Props) {
+/** The full outcome as one spoken sentence for the `aria-live` region. */
+function announce(result: GradeResult): string {
+  const score = `You scored ${result.correct_count} of ${result.total}.`;
+  const banked = result.isRecord
+    ? `A new record — you banked ${result.xpEarned} more XP, ${result.bestXp} of ${result.missionXpValue} for this mission.`
+    : `No new XP; your best is still ${result.bestCorrectCount} of ${result.bestQuestionTotal}, worth ${result.bestXp} XP.`;
+  const gate = result.passed
+    ? "You passed and the next zone is unlocked."
+    : "Not a pass — every question must be correct. Try again.";
+  return `${gate} ${score} ${banked}`;
+}
+
+/**
+ * What this attempt was worth, shown on a pass *and* a fail. Two parts, on
+ * purpose: the "+N XP" pill is the transient celebration (only on a record, and
+ * `aria-hidden` because the live region announces it), while the "Best …" line is
+ * persistent state a learner — or a screen reader re-reading the panel — can
+ * always check. When the best is short of perfect, it says so and invites another
+ * run; when it's maxed, it stops asking.
+ */
+function AttemptOutcome({ result }: { result: GradeResult }) {
+  const maxed = result.bestCorrectCount >= result.bestQuestionTotal;
+  return (
+    <div className="mt-3 space-y-2">
+      {result.isRecord && (
+        <div aria-hidden className="flex flex-wrap items-center gap-2">
+          <p className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 inline-flex items-center gap-1.5 rounded-full bg-amber-300/20 px-3 py-1 text-2xl font-black text-amber-100 motion-safe:duration-700">
+            <Zap className="size-6" aria-hidden />+{result.xpEarned} XP
+          </p>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-400/15 px-2.5 py-1 font-mono text-[10px] font-semibold tracking-widest text-emerald-200 uppercase">
+            <Trophy className="size-3" aria-hidden />
+            New record
+          </span>
+        </div>
+      )}
+      <p className="text-sm text-slate-300">
+        Scored {result.correct_count} of {result.total} · best {result.bestCorrectCount} of {result.bestQuestionTotal} ·{" "}
+        <span className="font-semibold text-amber-200">
+          {result.bestXp} of {result.missionXpValue} XP
+        </span>{" "}
+        banked
+        {maxed ? " · maxed out" : ""}
+      </p>
+      {!maxed && (
+        <p className="text-xs text-slate-400">
+          Retake the quiz any time — a better score banks the difference. A perfect run is worth the full{" "}
+          {result.missionXpValue} XP.
+        </p>
+      )}
+    </div>
+  );
+}
+
+// Quiz sub-view (Phase 3, rescored in S-04): select answers → submit → grade
+// server-side. On a pass, the success panel shows and the map is told to unlock;
+// on a fail, per-question correctness shows with unlimited "Try again". Either
+// way the XP the attempt banked is reported (via onGraded, which also refreshes
+// the map badge), so retaking to improve a score always shows its result.
+export default function QuizPanel({ zoneSlug, status, data, onBack, onGraded }: Props) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [phase, setPhase] = useState<"answering" | "grading" | "result">("answering");
@@ -61,7 +125,9 @@ export default function QuizPanel({ zoneSlug, status, data, onBack, onUnlocked }
       const graded = (await response.json()) as GradeResult;
       setResult(graded);
       setPhase("result");
-      if (graded.passed) onUnlocked(graded.unlockedZones, graded.totalXp);
+      // Reported on a fail too: a partial score still banks XP, so the map badge
+      // must refresh either way.
+      onGraded(graded);
     } catch {
       setSubmitError("We couldn't grade your answers. Please try again.");
       setPhase("answering");
@@ -108,13 +174,10 @@ export default function QuizPanel({ zoneSlug, status, data, onBack, onUnlocked }
             </p>
           )}
 
-          {/* Screen-reader + visual announcement of the outcome. */}
+          {/* Screen-reader announcement of the outcome: the score, what it banked,
+              whether it beat the previous best, and where that leaves the gate. */}
           <div aria-live="polite" className="sr-only">
-            {phase === "result" && result
-              ? result.passed
-                ? `You passed.${result.xpEarned > 0 ? ` You earned ${result.xpEarned} XP.` : ""} The next zone is unlocked.`
-                : `Not quite. ${result.correct_count} of ${result.total} correct. Try again.`
-              : ""}
+            {phase === "result" && result ? announce(result) : ""}
           </div>
 
           {status === "ready" && data && phase === "result" && result?.passed && (
@@ -123,28 +186,27 @@ export default function QuizPanel({ zoneSlug, status, data, onBack, onUnlocked }
                 <PartyPopper className="size-5" aria-hidden />
                 You cleared the gate!
               </p>
-              {/* The XP gain moment — animated in for motion-safe users, static
-                  otherwise. Suppressed entirely on a re-pass (xpEarned 0) so it
-                  never shows "+0 XP" as a reward. aria-hidden: the SR user hears
-                  the gain via the aria-live announcement above instead. */}
-              {result.xpEarned > 0 && (
-                <p
-                  aria-hidden
-                  className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 mt-3 inline-flex items-center gap-1.5 rounded-full bg-amber-300/20 px-3 py-1 text-2xl font-black text-amber-100 motion-safe:duration-700"
-                >
-                  <Zap className="size-6" aria-hidden />+{result.xpEarned} XP
-                </p>
-              )}
-              <p className="mt-2 text-sm text-slate-300">
+              <AttemptOutcome result={result} />
+              <p className="mt-3 text-sm text-slate-300">
                 The next zone is lit. Head back to the map to see the trail open up.
               </p>
-              <button
-                type="button"
-                onClick={onBack}
-                className="mt-5 inline-flex items-center gap-2 rounded-lg bg-amber-300 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-amber-200 focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
-              >
-                Back to the map
-              </button>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={onBack}
+                  className="inline-flex items-center gap-2 rounded-lg bg-amber-300 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-amber-200 focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
+                >
+                  Back to the map
+                </button>
+                <button
+                  type="button"
+                  onClick={tryAgain}
+                  className="inline-flex items-center gap-2 rounded-lg border border-amber-400/50 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:bg-amber-400/10 focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:outline-none"
+                >
+                  <RotateCcw className="size-4" aria-hidden />
+                  Retake quiz
+                </button>
+              </div>
             </div>
           )}
 
@@ -153,9 +215,13 @@ export default function QuizPanel({ zoneSlug, status, data, onBack, onUnlocked }
               {phase === "result" && result && !result.passed && (
                 <div className="mt-8 rounded-xl border border-rose-400/40 bg-rose-400/10 p-4" role="status">
                   <p className="text-sm font-semibold text-rose-200">
-                    Not quite — {result.correct_count} of {result.total} correct.
+                    Not quite — {result.correct_count} of {result.total} correct. Every question must be right to open
+                    the next zone.
                   </p>
-                  <p className="mt-1 text-sm text-slate-300">Review the marked questions and try again.</p>
+                  {/* A fail still banks the XP its score earned, so the outcome
+                      shows here too — the zone stays locked, the points don't. */}
+                  <AttemptOutcome result={result} />
+                  <p className="mt-3 text-sm text-slate-300">Review the marked questions and try again.</p>
                   <button
                     type="button"
                     onClick={tryAgain}

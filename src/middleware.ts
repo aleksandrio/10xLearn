@@ -1,7 +1,7 @@
 import { defineMiddleware } from "astro:middleware";
 import { createClient } from "@/lib/supabase";
-import { GUEST_PROGRESS_COOKIE, readUnlockedZones } from "@/lib/guest-progress";
-import { mergeGuestUnlocksIntoAccount } from "@/lib/progress";
+import { GUEST_SCORES_COOKIE, readGuestScores } from "@/lib/guest-progress";
+import { mergeGuestScoresIntoAccount } from "@/lib/progress";
 
 const PROTECTED_ROUTES = ["/dashboard"];
 const STATE_CHANGING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
@@ -31,16 +31,16 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // Guest→account merge: the single choke point every auth path passes through
   // (signup-then-confirm, returning login, OAuth callback). When an authed
-  // request still carries a guest cookie, fold its in-session unlocks forward
-  // into the account (idempotent) and clear the cookie so this runs once.
+  // request still carries a guest cookie, fold its in-session scores forward into
+  // the account and clear the cookie so this runs once.
   // Fail open — a merge hiccup must never turn a page load into a 500.
   if (supabase && context.locals.user) {
-    const guestCookie = context.cookies.get(GUEST_PROGRESS_COOKIE)?.value;
+    const guestCookie = context.cookies.get(GUEST_SCORES_COOKIE)?.value;
     if (guestCookie) {
       try {
-        const cookieUnlocked = await readUnlockedZones(guestCookie);
-        await mergeGuestUnlocksIntoAccount(supabase, context.locals.user.id, cookieUnlocked);
-        context.cookies.delete(GUEST_PROGRESS_COOKIE, { path: "/" });
+        const scores = await readGuestScores(guestCookie);
+        await mergeGuestScoresIntoAccount(supabase, context.locals.user.id, scores);
+        context.cookies.delete(GUEST_SCORES_COOKIE, { path: "/" });
       } catch (error) {
         // Fail open: keep the cookie so a later request retries. Log so a
         // persistently-failing merge is visible instead of silently swallowed.
