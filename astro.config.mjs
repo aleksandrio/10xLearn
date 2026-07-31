@@ -12,6 +12,12 @@ export default defineConfig({
   integrations: [react(), sitemap()],
   vite: {
     plugins: [tailwindcss()],
+    // Force a single React instance across the app and all pre-bundled deps.
+    // Without this, Vite can pull a second copy of React/React-DOM in through
+    // deps like @radix-ui/react-slot (via ui/button) and react-dom's
+    // useFormStatus, producing "Invalid hook call / more than one copy of
+    // React" and blanking the auth-form islands on hydration.
+    resolve: { dedupe: ["react", "react-dom"] },
   },
   adapter: cloudflare(),
   env: {
