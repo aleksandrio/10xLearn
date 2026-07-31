@@ -4,7 +4,10 @@ import { FormField } from "@/components/auth/FormField";
 import { PasswordToggle } from "@/components/auth/PasswordToggle";
 import { SubmitButton } from "@/components/auth/SubmitButton";
 import { ServerError } from "@/components/auth/ServerError";
-import { GoogleButton } from "@/components/auth/GoogleButton";
+// Google sign-in temporarily disabled (provider not yet configured). Re-enable
+// the [auth.external.google] block in supabase/config.toml and restore the
+// import + <GoogleButton /> below when OAuth is implemented.
+// import { GoogleButton } from "@/components/auth/GoogleButton";
 
 const MIN_PASSWORD_LENGTH = 6;
 
@@ -132,7 +135,7 @@ export default function SignUpForm({ serverError }: Props) {
           Create account
         </SubmitButton>
       </form>
-      <GoogleButton />
+      {/* <GoogleButton /> — disabled until Google OAuth is configured */}
     </>
   );
 }
