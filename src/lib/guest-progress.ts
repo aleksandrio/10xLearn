@@ -7,9 +7,14 @@
 // set of unlocked zone *slugs* carried by the cookie and nothing more. The
 // "first zone is always unlocked" default is DB-aware and lives in `@/lib/game`
 // (`isZoneUnlocked` / `buildMapModel`), because only that layer knows which zone
-// is first by `order_index`. The write/sign side lands in Phase 3.
+// is first by `order_index`.
 
+import type { AstroCookies } from "astro";
 import { GUEST_PROGRESS_SECRET } from "astro:env/server";
+
+// A guest's unlock set is convenience state, not security — a generous window so
+// a refresh (and a short-term return) keeps their progress.
+const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
 /** Cookie name holding the signed set of unlocked zone slugs. */
 export const GUEST_PROGRESS_COOKIE = "guest_progress";
@@ -25,6 +30,12 @@ function secret(): string {
   return GUEST_PROGRESS_SECRET ?? DEV_FALLBACK_SECRET;
 }
 
+function bytesToBase64Url(bytes: Uint8Array): string {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
 function base64UrlToBytes(value: string): Uint8Array {
   const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
   const binary = atob(base64);
@@ -38,6 +49,12 @@ function importKey(): Promise<CryptoKey> {
     "sign",
     "verify",
   ]);
+}
+
+async function sign(payload: string): Promise<string> {
+  const key = await importKey();
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(payload));
+  return bytesToBase64Url(new Uint8Array(signature));
 }
 
 async function verify(payload: string, signature: string): Promise<boolean> {
@@ -73,4 +90,21 @@ export async function readUnlockedZones(cookieValue: string | undefined): Promis
   } catch {
     return new Set();
   }
+}
+
+/**
+ * Serialize + HMAC-sign the unlocked-slug set and set it as the guest-progress
+ * cookie. Same secret and `payload.signature` format the read side verifies.
+ * The unlock set is derived server-side (never client-supplied) before this runs.
+ */
+export async function writeUnlockedZones(cookies: AstroCookies, unlocked: Set<string>): Promise<void> {
+  const payload = bytesToBase64Url(encoder.encode(JSON.stringify([...unlocked].sort())));
+  const signature = await sign(payload);
+  cookies.set(GUEST_PROGRESS_COOKIE, `${payload}.${signature}`, {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    secure: import.meta.env.PROD,
+    maxAge: COOKIE_MAX_AGE_SECONDS,
+  });
 }

@@ -21,7 +21,9 @@ const CHECKPOINT_ICON: Record<CheckpointType, typeof BookOpen> = {
 // (map ⇄ lesson ⇄ quiz) without touching the URL. Phase 3 adds grading + the
 // unlock transition (the point at which the character advances to a new zone).
 export default function WorldMap({ initialZones }: Props) {
+  const [zones, setZones] = useState<MapZone[]>(initialZones);
   const [view, setView] = useState<View>("map");
+  const [activeZone, setActiveZone] = useState<string | null>(null);
   const [status, setStatus] = useState<PanelStatus>("loading");
   const [lesson, setLesson] = useState<LessonData | null>(null);
   const [quiz, setQuiz] = useState<QuizData | null>(null);
@@ -30,7 +32,14 @@ export default function WorldMap({ initialZones }: Props) {
     setView("map");
   }
 
+  // Unlock is derived server-side; the grade response tells us which zones are
+  // now open so the map re-renders (and the character advances to the frontier).
+  function handleUnlocked(unlockedZones: string[]) {
+    setZones((prev) => prev.map((zone) => (unlockedZones.includes(zone.slug) ? { ...zone, locked: false } : zone)));
+  }
+
   async function openLesson(zoneSlug: string) {
+    setActiveZone(zoneSlug);
     setView("lesson");
     setStatus("loading");
     setLesson(null);
@@ -45,6 +54,7 @@ export default function WorldMap({ initialZones }: Props) {
   }
 
   async function openQuiz(zoneSlug: string) {
+    setActiveZone(zoneSlug);
     setView("quiz");
     setStatus("loading");
     setQuiz(null);
@@ -62,14 +72,22 @@ export default function WorldMap({ initialZones }: Props) {
     return <LessonPanel status={status} data={lesson} onBack={backToMap} />;
   }
   if (view === "quiz") {
-    return <QuizPanel status={status} data={quiz} onBack={backToMap} />;
+    return (
+      <QuizPanel
+        status={status}
+        data={quiz}
+        zoneSlug={activeZone ?? ""}
+        onBack={backToMap}
+        onUnlocked={handleUnlocked}
+      />
+    );
   }
 
-  const total = initialZones.length;
-  const litCount = initialZones.filter((zone) => !zone.locked).length;
+  const total = zones.length;
+  const litCount = zones.filter((zone) => !zone.locked).length;
   // The frontier is the furthest zone reached; the character waits at its lesson
   // station — the natural "start here" for the zone you've just unlocked.
-  const frontierSlug = [...initialZones].reverse().find((zone) => !zone.locked)?.slug ?? initialZones[0]?.slug;
+  const frontierSlug = [...zones].reverse().find((zone) => !zone.locked)?.slug ?? zones[0]?.slug;
 
   return (
     <main
@@ -110,7 +128,7 @@ export default function WorldMap({ initialZones }: Props) {
           />
 
           <div className="space-y-12">
-            {initialZones.map((zone, zoneIndex) => (
+            {zones.map((zone, zoneIndex) => (
               <section key={zone.slug} aria-labelledby={`zone-${zone.slug}-heading`} className="relative">
                 {/* Trailhead sign, centered on the spine. */}
                 <div className="relative z-10 flex justify-center">

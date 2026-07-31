@@ -304,29 +304,29 @@ No database changes. One new env var `GUEST_PROGRESS_SECRET` (optional; dev fall
 
 #### Automated
 
-- [x] 2.1 Linting passes: `npm run lint`
-- [x] 2.2 Build + type-check passes: `npm run build`
-- [x] 2.3 Locked-zone gate: `lesson?zoneSlug=context-and-agents` → 403 (fresh guest); `zoneSlug=foundations` → lesson JSON
+- [x] 2.1 Linting passes: `npm run lint` — 9e7512c
+- [x] 2.2 Build + type-check passes: `npm run build` — 9e7512c
+- [x] 2.3 Locked-zone gate: `lesson?zoneSlug=context-and-agents` → 403 (fresh guest); `zoneSlug=foundations` → lesson JSON — 9e7512c
 
 #### Manual
 
-- [x] 2.4 Zone 1 lesson checkpoint shows the lesson; back returns to map
-- [x] 2.5 Zone 1 quiz checkpoint shows 3 questions; no correct-answer hint in payload
-- [x] 2.6 Zone 2 checkpoints cannot be opened; direct quiz endpoint returns 403
-- [x] 2.7 Lesson/quiz panels keyboard-navigable; focus lands in panel on open
+- [x] 2.4 Zone 1 lesson checkpoint shows the lesson; back returns to map — 9e7512c
+- [x] 2.5 Zone 1 quiz checkpoint shows 3 questions; no correct-answer hint in payload — 9e7512c
+- [x] 2.6 Zone 2 checkpoints cannot be opened; direct quiz endpoint returns 403 — 9e7512c
+- [x] 2.7 Lesson/quiz panels keyboard-navigable; focus lands in panel on open — 9e7512c
 
 ### Phase 3: Take the quiz → pass/fail → unlock
 
 #### Automated
 
-- [ ] 3.1 Linting passes: `npm run lint`
-- [ ] 3.2 Build + type-check passes: `npm run build`
-- [ ] 3.3 Grade gate + integrity: locked-zone grade → 403; correct `foundations` submission → `passed: true` + `Set-Cookie`
-- [ ] 3.4 Empty/partial answers → grade returns 400
+- [x] 3.1 Linting passes: `npm run lint`
+- [x] 3.2 Build + type-check passes: `npm run build`
+- [x] 3.3 Grade gate + integrity: locked-zone grade → 403; correct `foundations` submission → `passed: true` + `Set-Cookie`
+- [x] 3.4 Empty/partial answers → grade returns 400
 
 #### Manual
 
-- [ ] 3.5 Passing Zone 1 quiz shows success panel; CTA → map with Zone 2 unlocked; refresh keeps it
-- [ ] 3.6 Failing shows wrong answers + unlimited retry; Zone 2 stays locked
-- [ ] 3.7 After unlock, Zone 2 checkpoints open and its endpoints return 200
-- [ ] 3.8 Full loop completable keyboard-only; pass/fail + unlock announced via `aria-live`
+- [x] 3.5 Passing Zone 1 quiz shows success panel; CTA → map with Zone 2 unlocked; refresh keeps it
+- [x] 3.6 Failing shows wrong answers + unlimited retry; Zone 2 stays locked
+- [x] 3.7 After unlock, Zone 2 checkpoints open and its endpoints return 200
+- [x] 3.8 Full loop completable keyboard-only; pass/fail + unlock announced via `aria-live`
