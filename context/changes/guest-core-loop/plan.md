@@ -319,14 +319,14 @@ No database changes. One new env var `GUEST_PROGRESS_SECRET` (optional; dev fall
 
 #### Automated
 
-- [x] 3.1 Linting passes: `npm run lint`
-- [x] 3.2 Build + type-check passes: `npm run build`
-- [x] 3.3 Grade gate + integrity: locked-zone grade → 403; correct `foundations` submission → `passed: true` + `Set-Cookie`
-- [x] 3.4 Empty/partial answers → grade returns 400
+- [x] 3.1 Linting passes: `npm run lint` — 86cb1d1
+- [x] 3.2 Build + type-check passes: `npm run build` — 86cb1d1
+- [x] 3.3 Grade gate + integrity: locked-zone grade → 403; correct `foundations` submission → `passed: true` + `Set-Cookie` — 86cb1d1
+- [x] 3.4 Empty/partial answers → grade returns 400 — 86cb1d1
 
 #### Manual
 
-- [x] 3.5 Passing Zone 1 quiz shows success panel; CTA → map with Zone 2 unlocked; refresh keeps it
-- [x] 3.6 Failing shows wrong answers + unlimited retry; Zone 2 stays locked
-- [x] 3.7 After unlock, Zone 2 checkpoints open and its endpoints return 200
-- [x] 3.8 Full loop completable keyboard-only; pass/fail + unlock announced via `aria-live`
+- [x] 3.5 Passing Zone 1 quiz shows success panel; CTA → map with Zone 2 unlocked; refresh keeps it — 86cb1d1
+- [x] 3.6 Failing shows wrong answers + unlimited retry; Zone 2 stays locked — 86cb1d1
+- [x] 3.7 After unlock, Zone 2 checkpoints open and its endpoints return 200 — 86cb1d1
+- [x] 3.8 Full loop completable keyboard-only; pass/fail + unlock announced via `aria-live` — 86cb1d1
