@@ -565,7 +565,7 @@ the new lint scope, which is verified to pass clean against the current tree.
 
 #### Automated
 
-- [x] 4.1 Full suite green from a clean checkout: `npm run lint`, `npm test`, `npm run build`
+- [x] 4.1 Full suite green from a clean checkout: `npm run lint`, `npm test`, `npm run build` — b92b17e
 
 #### Manual
 
