@@ -547,9 +547,9 @@ the new lint scope, which is verified to pass clean against the current tree.
 
 #### Automated
 
-- [x] 3.1 Lint passes: `npm run lint`
-- [x] 3.2 Unit tests pass: `npm test`
-- [x] 3.3 Build succeeds: `npm run build`
+- [x] 3.1 Lint passes: `npm run lint` — eb299bc
+- [x] 3.2 Unit tests pass: `npm test` — eb299bc
+- [x] 3.3 Build succeeds: `npm run build` — eb299bc
 
 #### Manual
 
@@ -565,7 +565,7 @@ the new lint scope, which is verified to pass clean against the current tree.
 
 #### Automated
 
-- [ ] 4.1 Full suite green from a clean checkout: `npm run lint`, `npm test`, `npm run build`
+- [x] 4.1 Full suite green from a clean checkout: `npm run lint`, `npm test`, `npm run build`
 
 #### Manual
 
