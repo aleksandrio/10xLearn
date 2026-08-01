@@ -86,7 +86,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - How is guest, in-session unlock state held before there's an account? — Owner: team. Block: no (an implementation choice for `/10x-plan`; does not gate sequencing).
 - **Risk:** This is the north star and covers most must-have FRs in one slice — justified because the PRD centers on a single user-visible workflow (Success Criteria treats the loop as atomic: "If this loop works, the product works"). Persistence, accounts, XP, and accessibility are split into separate comparable slices so this one stays the happy-path tracer bullet. Watch the ~800 ms p95 NFR for quiz submit / unlock / map nav — trivial at <1 qps but the interactions must feel immediate. If `/10x-plan` finds this too broad, split by user-visible outcome (map render vs. mission-play vs. unlock), never by layer.
-- **Status:** proposed
+- **Status:** done
 
 ### S-02: Persist progress with sign-up
 
@@ -157,3 +157,5 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **F-01: (foundation) a read-only content data model — zones, missions, lessons, and quiz questions — is defined and seeded, so the loop renders real content instead of placeholders.** — Archived 2026-07-27 → `context/archive/2026-07-27-seed-content-model/`. Lesson: —.
 - **S-02: after the guest loop, a learner can sign up (email + password — already scaffolded — or third-party OAuth) and their unlock and quiz result are saved; on returning they log in and resume exactly where they left off, with nothing reset.** — Archived 2026-07-31 → `context/archive/2026-07-31-persist-progress-with-signup/`. Lesson: —.
 - **S-03: a learner earns XP for completing missions and sees a visible score that accumulates and persists across sessions.** — Archived 2026-07-31 → `context/archive/2026-07-31-xp-across-sessions/`. Lesson: —.
+
+- **S-01: a guest can land on the world map with Zone 1 unlocked and others locked, enter Zone 1, read the lesson, take the 3-question quiz, get a pass/fail result, and on a pass see Zone 2 unlock visibly — all in a single session, no account.** — Archived 2026-08-02 → `context/archive/2026-07-28-guest-core-loop/`. Lesson: —.
