@@ -531,9 +531,9 @@ the new lint scope, which is verified to pass clean against the current tree.
 
 #### Automated
 
-- [x] 2.1 Lint passes: `npm run lint`
-- [x] 2.2 Unit tests pass: `npm test`
-- [x] 2.3 Build succeeds: `npm run build`
+- [x] 2.1 Lint passes: `npm run lint` — 5a3c6fd
+- [x] 2.2 Unit tests pass: `npm test` — 5a3c6fd
+- [x] 2.3 Build succeeds: `npm run build` — 5a3c6fd
 
 #### Manual
 
@@ -547,9 +547,9 @@ the new lint scope, which is verified to pass clean against the current tree.
 
 #### Automated
 
-- [ ] 3.1 Lint passes: `npm run lint`
-- [ ] 3.2 Unit tests pass: `npm test`
-- [ ] 3.3 Build succeeds: `npm run build`
+- [x] 3.1 Lint passes: `npm run lint`
+- [x] 3.2 Unit tests pass: `npm test`
+- [x] 3.3 Build succeeds: `npm run build`
 
 #### Manual
 

@@ -37,7 +37,11 @@ interface Props {
   onGraded: (result: GradeResult) => void;
 }
 
-/** The full outcome as one spoken sentence for the `aria-live` region. */
+/**
+ * The full outcome as one spoken sentence. It lives as `sr-only` text *inside* the
+ * result panel, which takes focus on grading — one announcement channel, not two.
+ * An `aria-live` region alongside a focus move would speak the outcome twice.
+ */
 function announce(result: GradeResult): string {
   const score = `You scored ${result.correct_count} of ${result.total}.`;
   const banked = result.isRecord
@@ -52,7 +56,7 @@ function announce(result: GradeResult): string {
 /**
  * What this attempt was worth, shown on a pass *and* a fail. Two parts, on
  * purpose: the "+N XP" pill is the transient celebration (only on a record, and
- * `aria-hidden` because the live region announces it), while the "Best …" line is
+ * `aria-hidden` because `announce()` already speaks it), while the "Best …" line is
  * persistent state a learner — or a screen reader re-reading the panel — can
  * always check. When the best is short of perfect, it says so and invites another
  * run; when it's maxed, it stops asking.
@@ -97,14 +101,34 @@ function AttemptOutcome({ result }: { result: GradeResult }) {
 // the map badge), so retaking to improve a score always shows its result.
 export default function QuizPanel({ zoneSlug, status, data, onBack, onGraded }: Props) {
   const headingRef = useRef<HTMLHeadingElement>(null);
+  // Whichever outcome panel renders (pass or fail) takes this ref — they are
+  // mutually exclusive — so grading can land focus on the result.
+  const resultRef = useRef<HTMLDivElement>(null);
+  const firstOptionRef = useRef<HTMLInputElement>(null);
+  // "Try again" unmounts the button that was just activated, so the retry path has
+  // to place focus deliberately. The flag keeps this effect from firing on mount,
+  // where the heading owns focus.
+  const retryPending = useRef(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [phase, setPhase] = useState<"answering" | "grading" | "result">("answering");
   const [result, setResult] = useState<GradeResult | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // Re-runs when the real quiz title replaces "Loading quiz…" — see LessonPanel.
   useEffect(() => {
     headingRef.current?.focus();
-  }, []);
+  }, [status]);
+
+  useEffect(() => {
+    if (phase === "result") {
+      resultRef.current?.focus();
+      return;
+    }
+    if (phase === "answering" && retryPending.current) {
+      retryPending.current = false;
+      firstOptionRef.current?.focus();
+    }
+  }, [phase]);
 
   const questions = data?.questions ?? [];
   const allAnswered = questions.length > 0 && questions.every((question) => answers[question.id]);
@@ -135,6 +159,7 @@ export default function QuizPanel({ zoneSlug, status, data, onBack, onGraded }: 
   }
 
   function tryAgain() {
+    retryPending.current = true;
     setAnswers({});
     setResult(null);
     setPhase("answering");
@@ -179,14 +204,15 @@ export default function QuizPanel({ zoneSlug, status, data, onBack, onGraded }: 
             </p>
           )}
 
-          {/* Screen-reader announcement of the outcome: the score, what it banked,
-              whether it beat the previous best, and where that leaves the gate. */}
-          <div aria-live="polite" className="sr-only">
-            {phase === "result" && result ? announce(result) : ""}
-          </div>
-
           {status === "ready" && data && phase === "result" && result?.passed && (
-            <div className="mt-8 rounded-2xl border border-amber-400/40 bg-amber-400/10 p-6">
+            <div
+              ref={resultRef}
+              tabIndex={-1}
+              className="mt-8 rounded-2xl border border-amber-400/40 bg-amber-400/10 p-6 focus-visible:outline-none"
+            >
+              {/* Spoken when this panel takes focus: the score, what it banked,
+                  whether it beat the previous best, and where that leaves the gate. */}
+              <p className="sr-only">{announce(result)}</p>
               <p className="flex items-center gap-2 text-lg font-bold text-amber-200">
                 <PartyPopper className="size-5" aria-hidden />
                 You cleared the gate!
@@ -218,7 +244,14 @@ export default function QuizPanel({ zoneSlug, status, data, onBack, onGraded }: 
           {status === "ready" && data && !(phase === "result" && result?.passed) && (
             <>
               {phase === "result" && result && !result.passed && (
-                <div className="mt-8 rounded-xl border border-rose-400/40 bg-rose-400/10 p-4" role="status">
+                <div
+                  ref={resultRef}
+                  tabIndex={-1}
+                  className="mt-8 rounded-xl border border-rose-400/40 bg-rose-400/10 p-4 focus-visible:outline-none"
+                >
+                  {/* Same single channel as the pass panel — spoken on focus, so no
+                      `role="status"` here to double it up. */}
+                  <p className="sr-only">{announce(result)}</p>
                   <p className="text-sm font-semibold text-rose-200">
                     Not quite — {result.correct_count} of {result.total} correct. Every question must be right to open
                     the next zone.
@@ -250,15 +283,22 @@ export default function QuizPanel({ zoneSlug, status, data, onBack, onGraded }: 
                         <legend className="flex items-center gap-2 text-base font-semibold text-slate-100">
                           <span className="font-mono text-sm text-slate-500">{index + 1}.</span>
                           {question.prompt}
-                          {graded &&
-                            (graded.correct ? (
-                              <CheckCircle2 className="size-4 text-emerald-400" aria-label="Correct" />
-                            ) : (
-                              <XCircle className="size-4 text-rose-400" aria-label="Incorrect" />
-                            ))}
+                          {/* Icon + `sr-only` text rather than `aria-label` on a bare
+                              <svg>: assistive tech isn't obliged to honour the latter,
+                              and this matches the convention used elsewhere here. */}
+                          {graded && (
+                            <>
+                              {graded.correct ? (
+                                <CheckCircle2 className="size-4 text-emerald-400" aria-hidden />
+                              ) : (
+                                <XCircle className="size-4 text-rose-400" aria-hidden />
+                              )}
+                              <span className="sr-only">{graded.correct ? "Correct" : "Incorrect"}</span>
+                            </>
+                          )}
                         </legend>
                         <div className="mt-4 space-y-2">
-                          {question.options.map((option) => {
+                          {question.options.map((option, optionIndex) => {
                             const selected = answers[question.id] === option.id;
                             return (
                               <label
@@ -272,6 +312,8 @@ export default function QuizPanel({ zoneSlug, status, data, onBack, onGraded }: 
                               >
                                 <input
                                   type="radio"
+                                  // The landing point for "Try again".
+                                  ref={index === 0 && optionIndex === 0 ? firstOptionRef : undefined}
                                   name={question.id}
                                   value={option.id}
                                   checked={selected}

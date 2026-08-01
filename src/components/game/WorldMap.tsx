@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BookOpen, Compass, HelpCircle, Lightbulb, Lock, X, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CheckpointType, MapZone } from "@/lib/game";
@@ -36,10 +36,28 @@ export default function WorldMap({ initialZones, initialXp, isAuthenticated, use
   // Guests get a "save your progress" nudge the moment they clear a gate; authed
   // learners never see it (their progress is already persisted).
   const [showNudge, setShowNudge] = useState(false);
+  // Checkpoint buttons, keyed `${slug}:${type}`, so returning from a panel can put
+  // focus back where the learner left it instead of at document start.
+  const checkpointRefs = useRef(new Map<string, HTMLButtonElement>());
+  const pendingRestoreKey = useRef<string | null>(null);
+  const mainRef = useRef<HTMLElement>(null);
 
   function backToMap() {
     setView("map");
   }
+
+  // The restore has to happen here rather than in backToMap(): while a panel is
+  // mounted this component returns early, so the checkpoint buttons aren't in the
+  // DOM and their refs are null. This effect runs after the map re-registers them.
+  useEffect(() => {
+    if (view !== "map") return;
+    const key = pendingRestoreKey.current;
+    if (!key) return;
+    pendingRestoreKey.current = null;
+    // <main> is the fallback so focus never falls back to <body> if the zone the
+    // learner came from is no longer rendered.
+    (checkpointRefs.current.get(key) ?? mainRef.current)?.focus();
+  }, [view]);
 
   // Unlock and XP are both derived server-side; the grade response tells us which
   // zones are now open so the map re-renders (and the character advances to the
@@ -54,6 +72,7 @@ export default function WorldMap({ initialZones, initialXp, isAuthenticated, use
   }
 
   async function openLesson(zoneSlug: string) {
+    pendingRestoreKey.current = `${zoneSlug}:lesson`;
     setActiveZone(zoneSlug);
     setView("lesson");
     setStatus("loading");
@@ -69,6 +88,7 @@ export default function WorldMap({ initialZones, initialXp, isAuthenticated, use
   }
 
   async function openQuiz(zoneSlug: string) {
+    pendingRestoreKey.current = `${zoneSlug}:quiz`;
     setActiveZone(zoneSlug);
     setView("quiz");
     setStatus("loading");
@@ -148,7 +168,13 @@ export default function WorldMap({ initialZones, initialXp, isAuthenticated, use
             </a>
           </nav>
         )}
-        <main id="main-content" tabIndex={-1} aria-labelledby="worldmap-heading" className="focus-visible:outline-none">
+        <main
+          id="main-content"
+          ref={mainRef}
+          tabIndex={-1}
+          aria-labelledby="worldmap-heading"
+          className="focus-visible:outline-none"
+        >
           <header>
             <p className="flex items-center gap-2 font-mono text-xs tracking-[0.35em] text-amber-300/80 uppercase">
               <Compass className="size-3.5" aria-hidden />
@@ -241,7 +267,15 @@ export default function WorldMap({ initialZones, initialXp, isAuthenticated, use
                           )}
                           <button
                             type="button"
-                            disabled={zone.locked}
+                            // Deliberately not `disabled`: a locked checkpoint stays in
+                            // the tab order so a keyboard learner can discover that
+                            // further zones exist ahead. `aria-disabled` plus no handler
+                            // keeps Enter and Space a no-op.
+                            ref={(node) => {
+                              const key = `${zone.slug}:${checkpoint.type}`;
+                              if (node) checkpointRefs.current.set(key, node);
+                              else checkpointRefs.current.delete(key);
+                            }}
                             aria-disabled={zone.locked}
                             onClick={
                               zone.locked
