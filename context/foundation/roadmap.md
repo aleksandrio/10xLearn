@@ -3,7 +3,7 @@ project: 10xLearn
 version: 1
 status: draft
 created: 2026-07-27
-updated: 2026-07-31
+updated: 2026-08-02
 prd_version: 1
 main_goal: market-feedback
 top_blocker: none
@@ -33,7 +33,7 @@ top_blocker: none
 | S-01  | guest-core-loop              | play the full loop as a guest and see the next zone unlock    | F-01          | US-01, FR-001, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009 | done     |
 | S-02  | persist-progress-with-signup | sign up (email/pw or OAuth) so progress survives and resumes  | S-01          | US-01, FR-001, FR-002, FR-003             | done     |
 | S-03  | xp-across-sessions           | earn XP that accumulates and persists across sessions         | S-02          | FR-010                                    | done     |
-| S-04  | accessible-core-loop         | complete the whole loop keyboard-only or with a screen reader | S-01          | US-01, NFR (accessibility)                | proposed |
+| S-04  | accessible-core-loop         | complete the whole loop keyboard-only or with a screen reader | S-01          | US-01, NFR (accessibility)                | done     |
 
 ## Streams
 
@@ -123,7 +123,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** The accessibility NFR gates launch, so this is not optional — but it's carved out as its own slice so S-01 can ship the happy path fast for validation, then be hardened and independently verified. Ideally `/10x-plan` for S-01 builds accessibly from the start and this slice becomes a verification+gap-closing pass rather than a retrofit. Parallel with the persistence stream — it touches the loop UI, not the account/data work.
-- **Status:** proposed
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -151,6 +151,8 @@ Foundations below assume these are present and do NOT re-scaffold them.
 ## Done
 
 (Empty on first generation. `/10x-archive` appends here — and flips the item's `Status` to `done` — when a change whose `Change ID` matches a roadmap item is archived.)
+
+- **S-04: a learner using only a keyboard, or only a screen reader, can complete the full core loop — guest play, lesson, quiz, and unlock — with all controls keyboard-operable and content screen-reader-labelled for the primary flow.** — Archived 2026-08-02 → `context/archive/2026-07-31-accessible-core-loop/`. Lesson: the manual keyboard and screen-reader passes were waived, so the non-visual claim rests on static lint plus behavioural checks, not a human walk — see the archived `change.md` §Notes for the open pre-launch risks.
 
 - **F-01: (foundation) a read-only content data model — zones, missions, lessons, and quiz questions — is defined and seeded, so the loop renders real content instead of placeholders.** — Archived 2026-07-27 → `context/archive/2026-07-27-seed-content-model/`. Lesson: —.
 - **S-02: after the guest loop, a learner can sign up (email + password — already scaffolded — or third-party OAuth) and their unlock and quiz result are saved; on returning they log in and resume exactly where they left off, with nothing reset.** — Archived 2026-07-31 → `context/archive/2026-07-31-persist-progress-with-signup/`. Lesson: —.

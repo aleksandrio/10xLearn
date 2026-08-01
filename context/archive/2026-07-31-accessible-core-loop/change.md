@@ -1,10 +1,10 @@
 ---
 change_id: accessible-core-loop
 title: Accessible core loop
-status: implemented
+status: archived
 created: 2026-07-31
 updated: 2026-08-02
-archived_at: null
+archived_at: 2026-08-01T23:36:49Z
 ---
 
 ## Notes
