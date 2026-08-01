@@ -518,10 +518,10 @@ the new lint scope, which is verified to pass clean against the current tree.
 
 #### Automated
 
-- [x] 1.1 Lint passes with the new gate active: `npm run lint`
-- [x] 1.2 Unit tests still pass: `npm test`
-- [x] 1.3 Build succeeds: `npm run build`
-- [x] 1.4 Astro files unaffected — no new warnings or parser errors from `.astro`
+- [x] 1.1 Lint passes with the new gate active: `npm run lint` — cdc6515
+- [x] 1.2 Unit tests still pass: `npm test` — cdc6515
+- [x] 1.3 Build succeeds: `npm run build` — cdc6515
+- [x] 1.4 Astro files unaffected — no new warnings or parser errors from `.astro` — cdc6515
 
 #### Manual
 
@@ -531,9 +531,9 @@ the new lint scope, which is verified to pass clean against the current tree.
 
 #### Automated
 
-- [ ] 2.1 Lint passes: `npm run lint`
-- [ ] 2.2 Unit tests pass: `npm test`
-- [ ] 2.3 Build succeeds: `npm run build`
+- [x] 2.1 Lint passes: `npm run lint`
+- [x] 2.2 Unit tests pass: `npm test`
+- [x] 2.3 Build succeeds: `npm run build`
 
 #### Manual
 

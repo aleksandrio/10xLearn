@@ -5,9 +5,15 @@ import { missingConfigs } from "@/lib/config-status";
 
 interface Props {
   title?: string;
+  /**
+   * Id of the page's `<main>`. Opt-in: when set, a skip link targeting it is
+   * rendered first inside `<body>`. Pages that render no `<main>` (auth,
+   * dashboard) simply omit it rather than shipping a link that dangles.
+   */
+  mainId?: string;
 }
 
-const { title = "10x Astro Starter" } = Astro.props;
+const { title = "10x Astro Starter", mainId } = Astro.props;
 ---
 
 <!doctype html>
@@ -19,6 +25,18 @@ const { title = "10x Astro Starter" } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
+    {
+      /* First focusable element on the page — ahead of the config banners, which
+         contain links of their own. */
+      mainId && (
+        <a
+          href={`#${mainId}`}
+          class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:bg-amber-300 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-slate-950 focus:ring-2 focus:ring-amber-200 focus:ring-offset-2 focus:ring-offset-slate-950 focus:outline-none"
+        >
+          Skip to main content
+        </a>
+      )
+    }
     {
       missingConfigs.map((cfg) => (
         <Banner variant="error">

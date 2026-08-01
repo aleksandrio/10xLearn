@@ -141,7 +141,12 @@ export default function QuizPanel({ zoneSlug, status, data, onBack, onGraded }: 
   }
 
   return (
-    <main className="relative min-h-screen w-full bg-slate-950 text-slate-100">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      aria-labelledby="quiz-heading"
+      className="relative min-h-screen w-full bg-slate-950 text-slate-100 focus-visible:outline-none"
+    >
       <div className="mx-auto max-w-2xl px-4 py-12">
         <button
           type="button"
