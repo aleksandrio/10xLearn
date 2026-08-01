@@ -1,9 +1,9 @@
 ---
 change_id: accessible-core-loop
 title: Accessible core loop
-status: implementing
+status: implemented
 created: 2026-07-31
-updated: 2026-08-01
+updated: 2026-08-02
 archived_at: null
 ---
 
@@ -39,10 +39,26 @@ is an architecture change (SSR entry points, deep links, panel state on load) th
 did not belong in this slice. Owner: unassigned; revisit when deep-linking to a
 zone is needed.
 
-### Verification status
+### Verification status — read before trusting the checkmarks
 
-Automated gates are green and committed (Phases 1–3). The manual keyboard-only
-and screen-reader passes — the deliverable Phase 4 is judged on — were explicitly
-waived for this run and remain **unchecked** in the plan's §Progress. The
-accessibility claim is therefore evidenced by static lint plus behavioural
-checks, not yet by a human non-visual walk of the loop.
+**3. The screen-reader verification never happened.** Every §Progress row is
+checked, but the manual keyboard-only and screen-reader passes were waived by the
+owner on 2026-08-02 and closed on that basis. Each row carries its own annotation:
+`verified`, `partial` (static or behavioural evidence only), or `waived; not
+performed`. The slice's headline claim — *a screen-reader user can complete the
+loop non-visually* — sits in the third category.
+
+What the code **is** backed by: `jsx-a11y` strict now gating every `.tsx` in CI
+(proven live by a deliberate-break probe), plus throwaway behavioural checks run
+during implementation and deleted before commit — locked-checkpoint inertness,
+focus restoration to the originating checkpoint, heading re-focus on load, result-
+panel focus with the outcome sentence present exactly once, "Try again" landing on
+option 1, and a graded-request failure keeping focus off `<body>`.
+
+The specific risk this leaves open is the one the plan itself flagged: Phase 3
+traded the `aria-live` region for a focus move, and "spoken exactly once" was the
+check meant to confirm that trade. If the focus move turns out silent in some
+screen-reader/browser pairing, the quiz outcome is announced **not at all** —
+worse than the double-speaking it replaced. Reinstating the `aria-live` region is
+the documented fallback. Treat this as the first thing to check in the pre-launch
+NFR sweep, alongside items 1 and 2 above.

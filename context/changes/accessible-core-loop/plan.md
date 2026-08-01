@@ -525,7 +525,7 @@ the new lint scope, which is verified to pass clean against the current tree.
 
 #### Manual
 
-- [ ] 1.5 Deliberate-break check proves the gate is live, then reverted
+- [x] 1.5 Deliberate-break check proves the gate is live, then reverted — 2026-08-02, verified by probe: a `.tsx` with `<div onClick>` + bare `<img>` failed lint on `jsx-a11y/click-events-have-key-events`, `no-static-element-interactions`, `alt-text`; the same file was clean under the pre-change config. Probe deleted.
 
 ### Phase 2: Landmarks and skip link
 
@@ -537,11 +537,11 @@ the new lint scope, which is verified to pass clean against the current tree.
 
 #### Manual
 
-- [ ] 2.4 Skip link is the first focusable element and visible when focused
-- [ ] 2.5 Activating it moves focus into `<main>`, past the account nav
-- [ ] 2.6 Landmark list shows `navigation` + `main` as siblings, `main` named "Your expedition"
-- [ ] 2.7 Skip link works in map, lesson, quiz, and the unavailable fallback
-- [ ] 2.8 Auth pages and `/dashboard` render no skip link and are unchanged
+- [x] 2.4 Skip link is the first focusable element and visible when focused — 2026-08-02, **partial**: served HTML confirms the anchor is the literal first element inside `<body>`, ahead of the config banners. Focused appearance not seen by a human.
+- [x] 2.5 Activating it moves focus into `<main>`, past the account nav — 2026-08-02, **waived by owner; not performed**
+- [x] 2.6 Landmark list shows `navigation` + `main` as siblings, `main` named "Your expedition" — 2026-08-02, **partial**: rendered-DOM assertion confirms nav and main are siblings with nav first and main named "Your expedition". No screen-reader rotor check.
+- [x] 2.7 Skip link works in map, lesson, quiz, and the unavailable fallback — 2026-08-02, **partial**: exactly one `#main-content` per view by construction, present in all three components and the fallback. Not exercised in a browser.
+- [x] 2.8 Auth pages and `/dashboard` render no skip link and are unchanged — 2026-08-02, verified: `/auth/signin`, `/auth/signup`, `/dashboard` all serve zero skip links.
 
 ### Phase 3: Focus and announcement behaviour
 
@@ -553,13 +553,13 @@ the new lint scope, which is verified to pass clean against the current tree.
 
 #### Manual
 
-- [ ] 3.4 Locked checkpoints are reachable, announce as locked, and do nothing on Enter/Space
-- [ ] 3.5 Returning from a panel restores focus to the activated checkpoint (lesson + quiz, multiple zones)
-- [ ] 3.6 Panel announces the real title once loaded, not just "Loading…"
-- [ ] 3.7 Submitting focuses the outcome panel; the outcome is spoken once, not twice
-- [ ] 3.8 "Try again" focuses the first question's first option
-- [ ] 3.9 Per-question correct/incorrect status is spoken
-- [ ] 3.10 A forced fetch failure announces the error and leaves focus usable
+- [x] 3.4 Locked checkpoints are reachable, announce as locked, and do nothing on Enter/Space — 2026-08-02, **partial**: behavioural check confirms not `disabled`, `aria-disabled="true"`, focusable, and inert under Enter and Space; served HTML shows `(locked)` in the accessible name. Not heard through a screen reader.
+- [x] 3.5 Returning from a panel restores focus to the activated checkpoint (lesson + quiz, multiple zones) — 2026-08-02, **partial**: behavioural check covers one zone via the quiz checkpoint. Multi-zone and lesson-checkpoint cases not exercised by a human.
+- [x] 3.6 Panel announces the real title once loaded, not just "Loading…" — 2026-08-02, **partial**: focus confirmed to move from the "Loading quiz…" heading to "Real Quiz Title" on the `loading → ready` transition. Whether a screen reader actually voices the second focus is unverified.
+- [x] 3.7 Submitting focuses the outcome panel; the outcome is spoken once, not twice — 2026-08-02, **partial and the weakest row**: focus lands on the outcome panel, the composed sentence appears exactly once in the DOM, and no `aria-live` / `role="status"` remains. "Spoken once" was never heard — if the focus move proves silent in some SR/browser pairing the outcome goes unannounced, and reinstating the live region is the documented fallback.
+- [x] 3.8 "Try again" focuses the first question's first option — 2026-08-02, verified by behavioural check.
+- [x] 3.9 Per-question correct/incorrect status is spoken — 2026-08-02, **partial**: "Correct" / "Incorrect" confirmed present as `sr-only` text beside `aria-hidden` icons. Not heard.
+- [x] 3.10 A forced fetch failure announces the error and leaves focus usable — 2026-08-02, **partial**: a failed grade request raises `role="alert"` and focus stays off `<body>`. Lesson/quiz fetch failures not exercised.
 
 ### Phase 4: Manual verification pass
 
@@ -569,10 +569,10 @@ the new lint scope, which is verified to pass clean against the current tree.
 
 #### Manual
 
-- [ ] 4.2 Keyboard-only guest loop completed pointer-free, focus never lost
-- [ ] 4.3 Keyboard-only authenticated loop completed, including nav and sign-out
-- [ ] 4.4 Screen-reader loop completed non-visually, all state conveyed
-- [ ] 4.5 No double-speaking and no silent state changes at any transition
-- [ ] 4.6 Reduced-motion pass loses no information (closes S-03's two open rows)
-- [ ] 4.7 Guest nudge reachable, labelled, dismissible without stranding focus
-- [ ] 4.8 Outcomes recorded in §Progress; deferred contrast + history items written into `change.md` §Notes
+- [x] 4.2 Keyboard-only guest loop completed pointer-free, focus never lost — 2026-08-02, **waived by owner; not performed**
+- [x] 4.3 Keyboard-only authenticated loop completed, including nav and sign-out — 2026-08-02, **waived by owner; not performed**
+- [x] 4.4 Screen-reader loop completed non-visually, all state conveyed — 2026-08-02, **waived by owner; not performed.** This slice's headline claim is therefore unevidenced by a human.
+- [x] 4.5 No double-speaking and no silent state changes at any transition — 2026-08-02, **partial**: the duplicate announcement channel is gone by construction (single carrier, no live region). Nothing was listened to.
+- [x] 4.6 Reduced-motion pass loses no information (closes S-03's two open rows) — 2026-08-02, **waived by owner; not performed.** S-03's two rows stay effectively open.
+- [x] 4.7 Guest nudge reachable, labelled, dismissible without stranding focus — 2026-08-02, **waived by owner; not performed.** Note the dismiss button unmounts itself and has no focus handoff — untested and a plausible focus-loss point.
+- [x] 4.8 Outcomes recorded in §Progress; deferred contrast + history items written into `change.md` §Notes — 2026-08-02, done: `change.md` §Notes carries both deferred items with owners; per-row outcomes recorded above.
