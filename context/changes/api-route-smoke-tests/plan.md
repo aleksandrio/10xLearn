@@ -519,11 +519,11 @@ routes.
 
 #### Automated
 
-- [x] 1.1 Test suite passes: `npm test`
-- [x] 1.2 Linting passes, including the new rule: `npm run lint`
-- [x] 1.3 Type checking passes: `npm run typecheck`
-- [x] 1.4 The new rule actually fires (add value-position `astro` import, confirm error, revert)
-- [x] 1.5 `src/test/api-context.ts` is not collected as a test file
+- [x] 1.1 Test suite passes: `npm test` — 9ddefa7
+- [x] 1.2 Linting passes, including the new rule: `npm run lint` — 9ddefa7
+- [x] 1.3 Type checking passes: `npm run typecheck` — 9ddefa7
+- [x] 1.4 The new rule actually fires (add value-position `astro` import, confirm error, revert) — 9ddefa7
+- [x] 1.5 `src/test/api-context.ts` is not collected as a test file — 9ddefa7
 
 #### Manual
 
@@ -534,10 +534,10 @@ routes.
 
 #### Automated
 
-- [ ] 2.1 Test suite passes: `npm test`
-- [ ] 2.2 Linting passes: `npm run lint`
-- [ ] 2.3 Type checking passes: `npm run typecheck`
-- [ ] 2.4 Every route under `src/pages/api/auth/` has a sibling `.test.ts` (8 files)
+- [x] 2.1 Test suite passes: `npm test`
+- [x] 2.2 Linting passes: `npm run lint`
+- [x] 2.3 Type checking passes: `npm run typecheck`
+- [x] 2.4 Every route under `src/pages/api/auth/` has a sibling `.test.ts` (8 files)
 
 #### Manual
 

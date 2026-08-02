@@ -15,9 +15,13 @@
 import type { APIContext, AstroCookies } from "astro";
 import type { User } from "@supabase/supabase-js";
 import type { createClient } from "@/lib/supabase";
+import type { createAdminClient } from "@/lib/supabase-admin";
 
 /** What a configured `createClient` hands back — and so what a mocked one must return. */
 type ServerClient = NonNullable<ReturnType<typeof createClient>>;
+
+/** The service-role counterpart, for the one route that needs both. */
+type AdminClient = NonNullable<ReturnType<typeof createAdminClient>>;
 
 /**
  * Origin for relative `url` overrides. Also the origin a same-site request is
@@ -122,6 +126,11 @@ export function makeUser(id = "user-1"): User {
  */
 export function makeSupabaseClient(members: Record<string, unknown> = {}): ServerClient {
   return members as unknown as ServerClient;
+}
+
+/** The same stand-in for `createAdminClient`, whose return type is a distinct client. */
+export function makeAdminClient(members: Record<string, unknown> = {}): AdminClient {
+  return members as unknown as AdminClient;
 }
 
 /** The `Location` a redirect response carries — what redirect assertions read. */
