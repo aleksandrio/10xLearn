@@ -462,24 +462,24 @@ It also means this change does not need to be rushed ahead of a green CI window.
 
 #### Automated
 
-- [x] 2.1 `npm run preview` boots the built Worker and stays up
-- [x] 2.2 An API route responds through workerd
+- [x] 2.1 `npm run preview` boots the built Worker and stays up — ce42255
+- [x] 2.2 An API route responds through workerd — ce42255
 
 #### Manual
 
-- [x] 2.3 `/` renders the guest loop with no console hydration errors
-- [x] 2.4 React islands hydrate — no duplicate-React "Invalid hook call"
-- [x] 2.5 Unauthenticated `/dashboard` redirects to sign-in
-- [x] 2.6 `compressHTML: 'jsx'` — inline-element spacing correct across `/`, auth pages, `/dashboard`
+- [x] 2.3 `/` renders the guest loop with no console hydration errors — ce42255
+- [x] 2.4 React islands hydrate — no duplicate-React "Invalid hook call" — ce42255
+- [x] 2.5 Unauthenticated `/dashboard` redirects to sign-in — ce42255
+- [x] 2.6 `compressHTML: 'jsx'` — inline-element spacing correct across `/`, auth pages, `/dashboard` — ce42255
 
 ### Phase 3: Close Out
 
 #### Automated
 
-- [ ] 3.1 `health-check.md` Fix #1 no longer reads OUTSTANDING
-- [ ] 3.2 `change.md` frontmatter reads `status: complete`
-- [ ] 3.3 `npm run format` leaves no diff on the edited docs
+- [x] 3.1 `health-check.md` Fix #1 no longer reads OUTSTANDING
+- [x] 3.2 `change.md` frontmatter reads `status: complete`
+- [x] 3.3 `npm run format` leaves no diff on the edited docs
 
 #### Manual
 
-- [ ] 3.4 Health-check verdict paragraph reads accurately against actual repo state
+- [x] 3.4 Health-check verdict paragraph reads accurately against actual repo state

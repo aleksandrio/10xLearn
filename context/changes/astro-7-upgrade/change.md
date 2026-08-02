@@ -1,7 +1,7 @@
 ---
 change_id: astro-7-upgrade
 title: Upgrade Astro 6 → 7 to clear the open HIGH advisories
-status: implementing
+status: complete
 created: 2026-08-02
 updated: 2026-08-02
 archived_at: null
@@ -41,12 +41,30 @@ precisely because this upgrade lands on that surface — SSR, the Cloudflare
 adapter, and the middleware API. The CI type gate (`85db956`) plus that suite are
 the safety net this change leans on.
 
-Open questions for research/planning: what Astro 7 breaks in `src/middleware.ts`
-(the middleware API changed), whether `@astrojs/react@5.0.4` and
-`@astrojs/check@0.9.8` need to move too, whether `vitest.astro-middleware.stub.ts`
-and `vitest.astro-env-server.stub.ts` still match the 7.x virtual modules, and
-whether the `vite ^7.3.2` override in `package.json` is still needed or now
-conflicts.
+Open questions — all answered by `research.md` (four executable probes) and
+`plan.md`:
+
+- **What Astro 7 breaks in `src/middleware.ts`**: nothing. The middleware API did
+  not change — `defineMiddleware`, `sequence`, the `(context, next)` signature,
+  and every member the file touches are identical in v7. No source file changed
+  anywhere in the repo.
+- **Does `@astrojs/react@5.0.4` need to move?** Yes, but not for compatibility —
+  for graph hygiene. v5 pins Vite 7; bumping to `^6.0.2` (the Vite 8 line) is what
+  lets a single Vite 8 resolve naturally instead of splitting the graph.
+- **Does `@astrojs/check@0.9.8` need to move?** No. It declares no `astro` peer at
+  all, floats to 0.9.9 on its own, and `astro check` passes. Empirically fine,
+  officially unstated.
+- **Do the two Vitest stubs still match the 7.x virtual modules?** Yes, untouched;
+  99/99 green at every probe.
+- **Is the `vite ^7.3.2` override still needed?** It was never needed — it matched
+  Astro 6's own range and was a no-op. Under Astro 7 it became the single blocker,
+  silently forcing Vite 7 and killing the build with a message blaming Astro. It
+  was **deleted**, not re-pinned, so nothing hand-maintained is left to go stale at
+  the next major.
+
+Outcome: `npm audit` 4 → 0. Landed at `1dfe1c5` (dependency graph), verified
+through workerd at `ce42255`. `context/foundation/health-check.md` Fix #1 is
+marked RESOLVED and the project verdict moved to `healthy`.
 
 Out of scope: the other major-version gaps the health check lists —
 `typescript` 6 → 7 (the Go rewrite), `eslint` 9 → 10 + `@eslint/js`, and
