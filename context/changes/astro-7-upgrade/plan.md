@@ -476,10 +476,10 @@ It also means this change does not need to be rushed ahead of a green CI window.
 
 #### Automated
 
-- [x] 3.1 `health-check.md` Fix #1 no longer reads OUTSTANDING
-- [x] 3.2 `change.md` frontmatter reads `status: complete`
-- [x] 3.3 `npm run format` leaves no diff on the edited docs
+- [x] 3.1 `health-check.md` Fix #1 no longer reads OUTSTANDING — a5c1ef0
+- [x] 3.2 `change.md` frontmatter reads `status: complete` — a5c1ef0
+- [x] 3.3 `npm run format` leaves no diff on the edited docs — a5c1ef0
 
 #### Manual
 
-- [x] 3.4 Health-check verdict paragraph reads accurately against actual repo state
+- [x] 3.4 Health-check verdict paragraph reads accurately against actual repo state — a5c1ef0
