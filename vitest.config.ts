@@ -9,9 +9,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
-      // Astro's build-time virtual module — Vitest can't resolve it, so map it
-      // to an inert stub. See the stub file for the rationale.
+      // Astro's build-time virtual modules — Vitest can't resolve them, so map
+      // each to a stub. See the stub files for the rationale.
       "astro:env/server": fileURLToPath(new URL("./vitest.astro-env-server.stub.ts", import.meta.url)),
+      "astro:middleware": fileURLToPath(new URL("./vitest.astro-middleware.stub.ts", import.meta.url)),
     },
   },
   test: {

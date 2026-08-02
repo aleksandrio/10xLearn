@@ -534,10 +534,10 @@ routes.
 
 #### Automated
 
-- [x] 2.1 Test suite passes: `npm test`
-- [x] 2.2 Linting passes: `npm run lint`
-- [x] 2.3 Type checking passes: `npm run typecheck`
-- [x] 2.4 Every route under `src/pages/api/auth/` has a sibling `.test.ts` (8 files)
+- [x] 2.1 Test suite passes: `npm test` — ae60325
+- [x] 2.2 Linting passes: `npm run lint` — ae60325
+- [x] 2.3 Type checking passes: `npm run typecheck` — ae60325
+- [x] 2.4 Every route under `src/pages/api/auth/` has a sibling `.test.ts` (8 files) — ae60325
 
 #### Manual
 
@@ -548,11 +548,11 @@ routes.
 
 #### Automated
 
-- [ ] 3.1 Test suite passes: `npm test`
-- [ ] 3.2 Linting passes: `npm run lint`
-- [ ] 3.3 Type checking passes: `npm run typecheck`
-- [ ] 3.4 Production build still succeeds: `npm run build`
-- [ ] 3.5 Full CI-equivalent gate passes: `npm run lint && npm run typecheck && npm test && npm run build`
+- [x] 3.1 Test suite passes: `npm test`
+- [x] 3.2 Linting passes: `npm run lint`
+- [x] 3.3 Type checking passes: `npm run typecheck`
+- [x] 3.4 Production build still succeeds: `npm run build`
+- [x] 3.5 Full CI-equivalent gate passes: `npm run lint && npm run typecheck && npm test && npm run build`
 
 #### Manual
 

@@ -12,7 +12,7 @@
 // Deliberately not a `.test.ts` file: `vitest.config.ts`'s `include` glob would
 // otherwise collect it and fail with "no test suite found".
 
-import type { APIContext, AstroCookies } from "astro";
+import type { APIContext, AstroCookies, MiddlewareHandler } from "astro";
 import type { User } from "@supabase/supabase-js";
 import type { createClient } from "@/lib/supabase";
 import type { createAdminClient } from "@/lib/supabase-admin";
@@ -131,6 +131,20 @@ export function makeSupabaseClient(members: Record<string, unknown> = {}): Serve
 /** The same stand-in for `createAdminClient`, whose return type is a distinct client. */
 export function makeAdminClient(members: Record<string, unknown> = {}): AdminClient {
   return members as unknown as AdminClient;
+}
+
+/**
+ * A middleware result narrowed to the `Response` it must be. `MiddlewareHandler`
+ * is declared as returning a `Response` *or* nothing, so without this every
+ * assertion in src/middleware.test.ts would carry its own narrowing. The
+ * parameter is derived from Astro's own type rather than restated, so it cannot
+ * drift from what `onRequest` actually returns.
+ */
+export function asResponse(result: Awaited<ReturnType<MiddlewareHandler>>): Response {
+  if (!(result instanceof Response)) {
+    throw new Error("Expected the middleware to return a Response.");
+  }
+  return result;
 }
 
 /** The `Location` a redirect response carries — what redirect assertions read. */
