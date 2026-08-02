@@ -29,11 +29,13 @@ insert into zones (id, slug, title, description, order_index) values
 -- Missions (one per zone)
 -- ---------------------------------------------------------------------------
 
-insert into missions (id, zone_id, slug, title, order_index) values
+-- xp_value escalates per zone (10 → 20) so progression feels weighted: a small
+-- game-feel signal that later zones are worth more. Derived XP sums these.
+insert into missions (id, zone_id, slug, title, order_index, xp_value) values
   ('b0000000-0000-0000-0000-000000000001',
-   'a0000000-0000-0000-0000-000000000001', 'prompting-basics', 'Prompting Basics', 1),
+   'a0000000-0000-0000-0000-000000000001', 'prompting-basics', 'Prompting Basics', 1, 10),
   ('b0000000-0000-0000-0000-000000000002',
-   'a0000000-0000-0000-0000-000000000002', 'working-with-context', 'Working with Context', 1);
+   'a0000000-0000-0000-0000-000000000002', 'working-with-context', 'Working with Context', 1, 20);
 
 -- ---------------------------------------------------------------------------
 -- Lessons (one per mission) — the quiz answers live in these bodies

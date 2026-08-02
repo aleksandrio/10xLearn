@@ -2,16 +2,17 @@ import type { APIRoute } from "astro";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase";
 import { getMissionByZone } from "@/lib/content";
-import { isZoneUnlockedByCookie } from "@/lib/game";
-import { GUEST_PROGRESS_COOKIE } from "@/lib/guest-progress";
+import { GUEST_SCORES_COOKIE } from "@/lib/guest-progress";
+import { isZoneUnlockedForRequest } from "@/lib/progress";
 
 export const prerender = false;
 
 const querySchema = z.object({ zoneSlug: z.string().min(1) });
 
-// Serve a zone's lesson as JSON — but only if the guest's signed cookie says the
-// zone is unlocked. The earned-access rule is enforced here, so a direct call to
-// a locked zone gets 403 regardless of what the UI shows.
+// Serve a zone's lesson as JSON — but only if the zone is unlocked for the
+// caller: DB completions for an authed learner, the signed cookie for a guest.
+// The earned-access rule is enforced here, so a direct call to a locked zone
+// gets 403 regardless of what the UI shows.
 export const GET: APIRoute = async (context) => {
   const parsed = querySchema.safeParse({ zoneSlug: context.url.searchParams.get("zoneSlug") });
   if (!parsed.success) {
@@ -25,8 +26,9 @@ export const GET: APIRoute = async (context) => {
   }
 
   try {
-    const cookieValue = context.cookies.get(GUEST_PROGRESS_COOKIE)?.value;
-    if (!(await isZoneUnlockedByCookie(supabase, cookieValue, zoneSlug))) {
+    const cookieValue = context.cookies.get(GUEST_SCORES_COOKIE)?.value;
+    const userId = context.locals.user?.id ?? null;
+    if (!(await isZoneUnlockedForRequest(supabase, userId, cookieValue, zoneSlug))) {
       return Response.json({ error: "This zone is locked." }, { status: 403 });
     }
 

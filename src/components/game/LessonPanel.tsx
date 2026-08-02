@@ -13,15 +13,25 @@ interface Props {
 }
 
 // Lesson sub-view (Phase 2): displays a zone's briefing text with a route back to
-// the map. Focus moves to the heading on open so keyboard/SR users land in the panel.
+// the map. Focus moves to the heading on open — and again once the real title
+// lands — so keyboard/SR users land in the panel and hear what they opened.
 export default function LessonPanel({ status, data, onBack }: Props) {
   const headingRef = useRef<HTMLHeadingElement>(null);
+  // Re-runs on the loading → ready|error transition, not just on mount: the heading
+  // reads "Loading briefing…" when focus first lands, and swapping its text in place
+  // would otherwise be a silent change for a screen reader. `status` settles at most
+  // once per mount, so this can't fight a learner who has moved on.
   useEffect(() => {
     headingRef.current?.focus();
-  }, []);
+  }, [status]);
 
   return (
-    <main className="relative min-h-screen w-full bg-slate-950 text-slate-100">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      aria-labelledby="lesson-heading"
+      className="relative min-h-screen w-full bg-slate-950 text-slate-100 focus-visible:outline-none"
+    >
       <div className="mx-auto max-w-2xl px-4 py-12">
         <button
           type="button"

@@ -2,15 +2,16 @@ import type { APIRoute } from "astro";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase";
 import { getMissionByZone, getQuizQuestions } from "@/lib/content";
-import { isZoneUnlockedByCookie } from "@/lib/game";
-import { GUEST_PROGRESS_COOKIE } from "@/lib/guest-progress";
+import { GUEST_SCORES_COOKIE } from "@/lib/guest-progress";
+import { isZoneUnlockedForRequest } from "@/lib/progress";
 
 export const prerender = false;
 
 const querySchema = z.object({ zoneSlug: z.string().min(1) });
 
 // Serve a zone's quiz questions (no answer key — read from the public view) as
-// JSON, only if the zone is unlocked per the signed cookie; else 403.
+// JSON, only if the zone is unlocked for the caller (DB completions when authed,
+// signed cookie when a guest); else 403.
 export const GET: APIRoute = async (context) => {
   const parsed = querySchema.safeParse({ zoneSlug: context.url.searchParams.get("zoneSlug") });
   if (!parsed.success) {
@@ -24,8 +25,9 @@ export const GET: APIRoute = async (context) => {
   }
 
   try {
-    const cookieValue = context.cookies.get(GUEST_PROGRESS_COOKIE)?.value;
-    if (!(await isZoneUnlockedByCookie(supabase, cookieValue, zoneSlug))) {
+    const cookieValue = context.cookies.get(GUEST_SCORES_COOKIE)?.value;
+    const userId = context.locals.user?.id ?? null;
+    if (!(await isZoneUnlockedForRequest(supabase, userId, cookieValue, zoneSlug))) {
       return Response.json({ error: "This zone is locked." }, { status: 403 });
     }
 

@@ -3,6 +3,7 @@ import { includeIgnoreFile } from "@eslint/config-helpers";
 import eslint from "@eslint/js";
 import eslintPluginPrettier from "eslint-plugin-prettier/recommended";
 import eslintPluginAstro from "eslint-plugin-astro";
+import jsxA11y from "eslint-plugin-jsx-a11y";
 import pluginReact from "eslint-plugin-react";
 import reactCompiler from "eslint-plugin-react-compiler";
 import eslintPluginReactHooks from "eslint-plugin-react-hooks";
@@ -59,6 +60,25 @@ const reactConfig = tseslint.config({
   },
 });
 
+// `jsxA11y.flatConfigs.strict` ships without a `files` key, so it must be spread
+// with an explicit scope — unscoped it would apply its rules *and* its
+// `parserOptions.ecmaFeatures.jsx` to .astro/.ts files, colliding with astroConfig's
+// dedicated parser block below.
+// eslint-plugin-jsx-a11y ships no type declarations, so everything read off it is
+// `any` — hence the narrow disable rather than a repo-wide one.
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- untyped plugin, see above */
+/** @type {import("eslint").Linter.Config} */
+const jsxA11yConfig = {
+  ...jsxA11y.flatConfigs.strict,
+  files: ["**/*.{jsx,tsx}"],
+  // `flatConfigs.strict` registers the plugin as a fresh wrapper object, but
+  // astro's flat/jsx-a11y-recommended (below) already registers the plugin's
+  // default export under the same "jsx-a11y" key — and ESLint rejects a redefine
+  // with a different object. Pin both registrations to the same instance.
+  plugins: { "jsx-a11y": jsxA11y },
+};
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+
 const astroConfig = tseslint.config({
   files: ["**/*.astro"],
   languageOptions: {
@@ -91,6 +111,7 @@ export default tseslint.config(
   { ignores: ["src/db/database.types.ts", "supabase/.temp/**"] },
   baseConfig,
   reactConfig,
+  jsxA11yConfig,
   eslintPluginAstro.configs["flat/recommended"],
   ...eslintPluginAstro.configs["flat/jsx-a11y-recommended"],
   astroConfig,

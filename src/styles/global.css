@@ -1,4 +1,9 @@
-@import "tailwindcss";
+/* Tailwind v4 auto-detects sources from the project root, which sweeps in the
+   markdown under .claude and turns bracketed prose into arbitrary-property
+   utilities (the build then warns "file" is not a known CSS property, and the
+   dead rules ship). Scope detection to application code instead. */
+@import "tailwindcss" source(none);
+@source "../../src";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));

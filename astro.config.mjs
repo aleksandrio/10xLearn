@@ -2,14 +2,16 @@
 import { defineConfig, envField } from "astro/config";
 
 import react from "@astrojs/react";
-import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 import cloudflare from "@astrojs/cloudflare";
 
 // https://astro.build/config
 export default defineConfig({
   output: "server",
-  integrations: [react(), sitemap()],
+  // @astrojs/sitemap was registered here but skipped on every build: it
+  // requires a static `site` origin, which this project does not set. Re-add
+  // it together with `site: "https://<deploy-origin>"` when SEO matters.
+  integrations: [react()],
   vite: {
     plugins: [tailwindcss()],
     // Force a single React instance across the app and all pre-bundled deps.

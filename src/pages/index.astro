@@ -3,36 +3,46 @@ import Layout from "@/layouts/Layout.astro";
 import WorldMap from "@/components/game/WorldMap";
 import { createClient } from "@/lib/supabase";
 import { buildMapModel, type MapZone } from "@/lib/game";
-import { readUnlockedZones, GUEST_PROGRESS_COOKIE } from "@/lib/guest-progress";
-import { getUnlockedZoneSlugsForUser } from "@/lib/progress";
+import { GUEST_SCORES_COOKIE } from "@/lib/guest-progress";
+import { getUnlockedZonesForRequest, getTotalXpForRequest } from "@/lib/progress";
 
 const supabase = createClient(Astro.request.headers, Astro.cookies);
 const user = Astro.locals.user;
 
 let zones: MapZone[] = [];
+let xp = 0;
 let loadFailed = false;
 
 if (supabase) {
   try {
-    // Authed learners read their unlocked set from the DB (mission_completions);
-    // guests keep the signed-cookie path untouched. `buildMapModel` is source-
-    // agnostic, so the same call renders either set.
-    const unlocked = user
-      ? await getUnlockedZoneSlugsForUser(supabase, user.id)
-      : await readUnlockedZones(Astro.cookies.get(GUEST_PROGRESS_COOKIE)?.value);
+    // Both the unlock set and the XP total resolve per-caller behind one seam:
+    // DB attempts when authed, the signed cookie's scores when a guest.
+    // `buildMapModel` is source-agnostic, so the same call renders either set.
+    const userId = user?.id ?? null;
+    const cookieValue = Astro.cookies.get(GUEST_SCORES_COOKIE)?.value;
+    const unlocked = await getUnlockedZonesForRequest(supabase, userId, cookieValue);
     zones = await buildMapModel(supabase, unlocked);
+    // Inside the try so a failure still falls through to the "unavailable" state
+    // rather than a half-render.
+    xp = await getTotalXpForRequest(supabase, userId, cookieValue);
   } catch {
     loadFailed = true;
   }
 }
 ---
 
-<Layout title="10xLearn — World Map">
+<Layout title="10xLearn — World Map" mainId="main-content">
   {
     supabase && !loadFailed ? (
-      <WorldMap client:load initialZones={zones} isAuthenticated={!!user} userEmail={user?.email ?? null} />
+      <WorldMap
+        client:load
+        initialZones={zones}
+        initialXp={xp}
+        isAuthenticated={!!user}
+        userEmail={user?.email ?? null}
+      />
     ) : (
-      <main class="mx-auto max-w-2xl px-4 py-10">
+      <main id="main-content" tabindex="-1" class="mx-auto max-w-2xl px-4 py-10">
         <h1 class="text-2xl font-semibold tracking-tight">World map unavailable</h1>
         <p class="text-muted-foreground mt-2 text-sm">
           The learning content can&rsquo;t be loaded right now. Check that Supabase is configured, then reload the page.

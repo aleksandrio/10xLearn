@@ -63,41 +63,13 @@ export type Database = {
           },
         ]
       }
-      mission_completions: {
-        Row: {
-          completed_at: string
-          id: string
-          mission_id: string
-          user_id: string
-        }
-        Insert: {
-          completed_at?: string
-          id?: string
-          mission_id: string
-          user_id: string
-        }
-        Update: {
-          completed_at?: string
-          id?: string
-          mission_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "mission_completions_mission_id_fkey"
-            columns: ["mission_id"]
-            isOneToOne: false
-            referencedRelation: "missions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       missions: {
         Row: {
           id: string
           order_index: number
           slug: string
           title: string
+          xp_value: number
           zone_id: string
         }
         Insert: {
@@ -105,6 +77,7 @@ export type Database = {
           order_index: number
           slug: string
           title: string
+          xp_value?: number
           zone_id: string
         }
         Update: {
@@ -112,6 +85,7 @@ export type Database = {
           order_index?: number
           slug?: string
           title?: string
+          xp_value?: number
           zone_id?: string
         }
         Relationships: [
@@ -120,6 +94,44 @@ export type Database = {
             columns: ["zone_id"]
             isOneToOne: false
             referencedRelation: "zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_attempts: {
+        Row: {
+          attempted_at: string
+          correct_count: number
+          id: string
+          mission_id: string
+          passed: boolean
+          question_total: number
+          user_id: string
+        }
+        Insert: {
+          attempted_at?: string
+          correct_count: number
+          id?: string
+          mission_id: string
+          passed: boolean
+          question_total: number
+          user_id: string
+        }
+        Update: {
+          attempted_at?: string
+          correct_count?: number
+          id?: string
+          mission_id?: string
+          passed?: boolean
+          question_total?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
             referencedColumns: ["id"]
           },
         ]

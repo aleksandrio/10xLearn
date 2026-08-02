@@ -5,9 +5,12 @@
 // The "first zone is always unlocked" default lives here (not in the cookie
 // helper) because only this layer knows the play order (`order_index`). The
 // cookie carries only the zones a guest has *earned* beyond the first.
+//
+// `isZoneUnlocked` is the rule; deciding *which* unlocked set to apply it to
+// (DB completions when authed, cookie when a guest) belongs to `@/lib/progress`
+// — see `isZoneUnlockedForRequest`, the gate the game endpoints call.
 
 import { getZones, getMissionByZoneId, type ContentClient, type Zone } from "@/lib/content";
-import { readUnlockedZones } from "@/lib/guest-progress";
 
 export type CheckpointType = "lesson" | "quiz";
 
@@ -31,21 +34,6 @@ export interface MapZone {
  */
 export function isZoneUnlocked(slug: string, firstSlug: string | undefined, unlocked: Set<string>): boolean {
   return slug === firstSlug || unlocked.has(slug);
-}
-
-/**
- * The single source of truth for the earned-access gate: verify the guest's
- * signed cookie and decide whether `zoneSlug` is unlocked (first zone is always
- * free). Every game endpoint re-checks here, so a direct API call to a locked
- * zone can't bypass the gate.
- */
-export async function isZoneUnlockedByCookie(
-  supabase: ContentClient,
-  cookieValue: string | undefined,
-  zoneSlug: string,
-): Promise<boolean> {
-  const [unlocked, zones] = await Promise.all([readUnlockedZones(cookieValue), getZones(supabase)]);
-  return isZoneUnlocked(zoneSlug, zones[0]?.slug, unlocked);
 }
 
 /** The slug of the zone immediately after `currentSlug` in play order, or null. Used by Phase 3. */

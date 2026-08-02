@@ -1,23 +1,48 @@
-// Signed guest-progress cookie (S-01). Owns the HMAC-signed cookie that records
-// which zones a guest has unlocked, so the world map renders correctly on first
-// paint without a login. Web Crypto only (`crypto.subtle`) — `node:crypto` is
-// not available on the Cloudflare workerd runtime we deploy to.
+// Signed guest-progress cookie (S-01, rescored in S-04). Owns the HMAC-signed
+// cookie that records a guest's *best score per zone*, so the world map and XP
+// badge render correctly on first paint without a login. Web Crypto only
+// (`crypto.subtle`) — `node:crypto` is not available on the Cloudflare workerd
+// runtime we deploy to.
+//
+// Scores, not unlocks or bare completions. Each format fixed a blind spot in the
+// one before it:
+//   * unlocked slugs   — a pass of the *final* zone unlocks nothing, so it was
+//                        unrepresentable: no XP, and lost at signup.
+//   * completed slugs  — binary, so a retake could never improve anything.
+//   * best scores      — carries how well, not just whether, which is what
+//                        partial credit and "is it a record?" both need.
+// Each is a JSON payload under a distinct cookie name, so an older cookie is
+// ignored rather than silently misread as the current shape.
 //
 // This module is deliberately DB-agnostic: it verifies and (de)serializes the
-// set of unlocked zone *slugs* carried by the cookie and nothing more. The
-// "first zone is always unlocked" default is DB-aware and lives in `@/lib/game`
-// (`isZoneUnlocked` / `buildMapModel`), because only that layer knows which zone
-// is first by `order_index`.
+// per-zone scores and nothing more. Turning those into attempts, unlocks (with
+// the "first zone is always free" default) and XP is DB-aware and lives in
+// `@/lib/game` + `@/lib/progress`, because only those layers know the play order
+// (`order_index`) and the XP weights.
 
 import type { AstroCookies } from "astro";
 import { GUEST_PROGRESS_SECRET } from "astro:env/server";
 
-// A guest's unlock set is convenience state, not security — a generous window so
-// a refresh (and a short-term return) keeps their progress.
+// A guest's scores are convenience state, not security — a generous window so a
+// refresh (and a short-term return) keeps their progress.
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
-/** Cookie name holding the signed set of unlocked zone slugs. */
-export const GUEST_PROGRESS_COOKIE = "guest_progress";
+/**
+ * Cookie name holding the signed per-zone best scores. Distinct from the earlier
+ * `guest_progress` (unlocked slugs) and `guest_completions` (completed slugs)
+ * names on purpose — see the module header. A stale cookie under either old name
+ * is simply ignored.
+ */
+export const GUEST_SCORES_COOKIE = "guest_scores";
+
+/** A guest's best result on one zone's quiz. */
+export interface GuestScore {
+  correctCount: number;
+  questionTotal: number;
+}
+
+/** Best score per zone slug — the whole of what the cookie carries. */
+export type GuestScores = Map<string, GuestScore>;
 
 // Dev-only fallback so local dev works without configuring a secret. This is
 // intentionally insecure and documented as such — a real secret is set in the
@@ -73,40 +98,62 @@ async function verify(payload: string, signature: string): Promise<boolean> {
 }
 
 /**
- * Verify and decode the guest-progress cookie into the set of unlocked zone
- * slugs it carries. Fail-safe: a missing, malformed, or tampered cookie yields
- * an empty set — never throws, never a 500. The "first zone is always unlocked"
- * default is applied by the DB-aware layer in `@/lib/game`.
+ * Verify and decode the guest-progress cookie into the per-zone best scores it
+ * carries. Fail-safe: a missing, malformed, or tampered cookie yields an empty
+ * map — never throws, never a 500. Individual malformed entries are dropped
+ * rather than poisoning the whole set. Turning scores into attempts, unlocks and
+ * XP is the DB-aware layer's job in `@/lib/progress`.
+ *
+ * Wire shape is a compact `[slug, correct, total]` triple array:
+ * `[["foundations",2,3]]`.
  */
-export async function readUnlockedZones(cookieValue: string | undefined): Promise<Set<string>> {
-  if (!cookieValue) return new Set();
+export async function readGuestScores(cookieValue: string | undefined): Promise<GuestScores> {
+  const scores: GuestScores = new Map();
+  if (!cookieValue) return scores;
 
   const separator = cookieValue.indexOf(".");
-  if (separator <= 0) return new Set();
+  if (separator <= 0) return scores;
 
   const payload = cookieValue.slice(0, separator);
   const signature = cookieValue.slice(separator + 1);
-  if (!(await verify(payload, signature))) return new Set();
+  if (!(await verify(payload, signature))) return scores;
 
   try {
     const json = new TextDecoder().decode(base64UrlToBytes(payload));
     const parsed: unknown = JSON.parse(json);
-    if (!Array.isArray(parsed)) return new Set();
-    return new Set(parsed.filter((slug): slug is string => typeof slug === "string"));
+    if (!Array.isArray(parsed)) return scores;
+
+    for (const entry of parsed) {
+      if (!Array.isArray(entry) || entry.length !== 3) continue;
+      const [slug, correctCount, questionTotal] = entry as unknown[];
+      if (typeof slug !== "string" || !slug) continue;
+      if (!Number.isInteger(correctCount) || !Number.isInteger(questionTotal)) continue;
+      const correct = correctCount as number;
+      const total = questionTotal as number;
+      // A score outside 0..total is nonsense; drop it rather than let a tampered
+      // (but somehow signed) payload inflate XP.
+      if (total <= 0 || correct < 0 || correct > total) continue;
+      scores.set(slug, { correctCount: correct, questionTotal: total });
+    }
+    return scores;
   } catch {
-    return new Set();
+    return new Map();
   }
 }
 
 /**
- * Serialize + HMAC-sign the unlocked-slug set and set it as the guest-progress
- * cookie. Same secret and `payload.signature` format the read side verifies.
- * The unlock set is derived server-side (never client-supplied) before this runs.
+ * Serialize + HMAC-sign the per-zone best scores and set them as the guest-
+ * progress cookie. Same secret and `payload.signature` format the read side
+ * verifies. Scores only ever come from a server-side grading result (never
+ * client-supplied) before this runs.
  */
-export async function writeUnlockedZones(cookies: AstroCookies, unlocked: Set<string>): Promise<void> {
-  const payload = bytesToBase64Url(encoder.encode(JSON.stringify([...unlocked].sort())));
+export async function writeGuestScores(cookies: AstroCookies, scores: GuestScores): Promise<void> {
+  const triples = [...scores.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([slug, score]) => [slug, score.correctCount, score.questionTotal]);
+  const payload = bytesToBase64Url(encoder.encode(JSON.stringify(triples)));
   const signature = await sign(payload);
-  cookies.set(GUEST_PROGRESS_COOKIE, `${payload}.${signature}`, {
+  cookies.set(GUEST_SCORES_COOKIE, `${payload}.${signature}`, {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
