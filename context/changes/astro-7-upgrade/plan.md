@@ -440,37 +440,37 @@ It also means this change does not need to be rushed ahead of a green CI window.
 
 #### Automated
 
-- [x] 1.1 Node is 22.x before installing (`node -v`)
-- [x] 1.2 Install succeeds and regenerates the lock (`npm install`)
-- [x] 1.3 `package.json` has no `overrides` block
-- [x] 1.4 Trap 1 — `npm ls sharp` reports `>= 0.35.0`
-- [x] 1.5 Trap 2 — `npm ls wrangler` reports a single copy
-- [x] 1.6 `npm ls vite` reports one resolved version on the 8.x line
-- [x] 1.7 `npm ls zod` reports a single copy under the app
-- [x] 1.8 `npm audit` reports 0 vulnerabilities
-- [x] 1.9 `npx astro sync` generates types before linting
-- [x] 1.10 `npm run lint` passes
-- [x] 1.11 `npm run typecheck` passes
-- [x] 1.12 `npm test` passes 99/99
-- [x] 1.13 `npm run build` passes with no prerender-entry-point error
+- [x] 1.1 Node is 22.x before installing (`node -v`) — 1dfe1c5
+- [x] 1.2 Install succeeds and regenerates the lock (`npm install`) — 1dfe1c5
+- [x] 1.3 `package.json` has no `overrides` block — 1dfe1c5
+- [x] 1.4 Trap 1 — `npm ls sharp` reports `>= 0.35.0` — 1dfe1c5
+- [x] 1.5 Trap 2 — `npm ls wrangler` reports a single copy — 1dfe1c5
+- [x] 1.6 `npm ls vite` reports one resolved version on the 8.x line — 1dfe1c5
+- [x] 1.7 `npm ls zod` reports a single copy under the app — 1dfe1c5
+- [x] 1.8 `npm audit` reports 0 vulnerabilities — 1dfe1c5
+- [x] 1.9 `npx astro sync` generates types before linting — 1dfe1c5
+- [x] 1.10 `npm run lint` passes — 1dfe1c5
+- [x] 1.11 `npm run typecheck` passes — 1dfe1c5
+- [x] 1.12 `npm test` passes 99/99 — 1dfe1c5
+- [x] 1.13 `npm run build` passes with no prerender-entry-point error — 1dfe1c5
 
 #### Manual
 
-- [x] 1.14 `dist/_headers` Cache-Control injection reviewed and accepted
+- [x] 1.14 `dist/_headers` Cache-Control injection reviewed and accepted — 1dfe1c5
 
 ### Phase 2: Runtime Verification Through workerd
 
 #### Automated
 
-- [ ] 2.1 `npm run preview` boots the built Worker and stays up
-- [ ] 2.2 An API route responds through workerd
+- [x] 2.1 `npm run preview` boots the built Worker and stays up
+- [x] 2.2 An API route responds through workerd
 
 #### Manual
 
-- [ ] 2.3 `/` renders the guest loop with no console hydration errors
-- [ ] 2.4 React islands hydrate — no duplicate-React "Invalid hook call"
-- [ ] 2.5 Unauthenticated `/dashboard` redirects to sign-in
-- [ ] 2.6 `compressHTML: 'jsx'` — inline-element spacing correct across `/`, auth pages, `/dashboard`
+- [x] 2.3 `/` renders the guest loop with no console hydration errors
+- [x] 2.4 React islands hydrate — no duplicate-React "Invalid hook call"
+- [x] 2.5 Unauthenticated `/dashboard` redirects to sign-in
+- [x] 2.6 `compressHTML: 'jsx'` — inline-element spacing correct across `/`, auth pages, `/dashboard`
 
 ### Phase 3: Close Out
 
