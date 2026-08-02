@@ -527,7 +527,7 @@ routes.
 
 #### Manual
 
-- [ ] 1.6 Breaking a route on purpose fails the suite with a message naming the route and branch
+- [x] 1.6 Breaking a route on purpose fails the suite with a message naming the route and branch — 9ddefa7
 - [ ] 1.7 Helper ergonomics hold up — a new case needs no cast and no boilerplate
 
 ### Phase 2: Auth Routes
@@ -541,21 +541,21 @@ routes.
 
 #### Manual
 
-- [ ] 2.5 Breaking `reset-request`'s neutral redirect fails the suite
+- [x] 2.5 Breaking `reset-request`'s neutral redirect fails the suite — ae60325
 - [ ] 2.6 Failure messages name the route and branch without opening the test
 
 ### Phase 3: Middleware
 
 #### Automated
 
-- [x] 3.1 Test suite passes: `npm test`
-- [x] 3.2 Linting passes: `npm run lint`
-- [x] 3.3 Type checking passes: `npm run typecheck`
-- [x] 3.4 Production build still succeeds: `npm run build`
-- [x] 3.5 Full CI-equivalent gate passes: `npm run lint && npm run typecheck && npm test && npm run build`
+- [x] 3.1 Test suite passes: `npm test` — 06a8bfc
+- [x] 3.2 Linting passes: `npm run lint` — 06a8bfc
+- [x] 3.3 Type checking passes: `npm run typecheck` — 06a8bfc
+- [x] 3.4 Production build still succeeds: `npm run build` — 06a8bfc
+- [x] 3.5 Full CI-equivalent gate passes: `npm run lint && npm run typecheck && npm test && npm run build` — 06a8bfc
 
 #### Manual
 
-- [ ] 3.6 Removing the merge `try`/`catch` fails the fail-open test
-- [ ] 3.7 Inverting the CSRF comparison fails the suite
-- [ ] 3.8 The stub does not leak into `npm run dev` — middleware still runs in the real app
+- [x] 3.6 Removing the merge `try`/`catch` fails the fail-open test — 06a8bfc
+- [x] 3.7 Inverting the CSRF comparison fails the suite — 06a8bfc
+- [x] 3.8 The stub does not leak into `npm run dev` — middleware still runs in the real app — 06a8bfc
